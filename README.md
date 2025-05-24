@@ -56,7 +56,7 @@ O MotoConnect é uma solução para gerenciamento completo de motocicletas, perm
    git clone https://github.com/seuusuario/seurepo.git
    ```
 
-2. **Configure a ConnectionString** no `appsettings.json` já está pré configurado o acesso com minhas credenciais e as tabelas já estão criadas
+2. já está pré configurado o acesso com minhas credenciais e as tabelas já estão criadas no banco de dados
 
 3. **Execute os comandos:**
    ```bash
@@ -65,7 +65,7 @@ O MotoConnect é uma solução para gerenciamento completo de motocicletas, perm
    dotnet run
    ```
 
-4. **Acesse a documentação Swagger:**
+4. **Acesse a documentação Swagger:** O app está em modo Development por isso rode com o método HTTP e será redirecionado automaticamente, caso acesse com HTTPS deverá inserir a URL manual
    ```
    https://localhost:5214/swagger
    ```
