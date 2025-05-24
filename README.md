@@ -3,7 +3,6 @@
 > RESTful API desenvolvida em ASP.NET Core com integração ao Oracle Database, como parte do Challenge FIAP 2025.
 
 [![.NET Core](https://img.shields.io/badge/.NET%20Core-8.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
-[![Oracle](https://img.shields.io/badge/Oracle-F80000?style=flat-square&logo=oracle&logoColor=white)](https://www.oracle.com/)
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=black)](https://swagger.io/)
 
 ## 📋 Sobre
@@ -44,11 +43,11 @@ O MotoConnect é uma solução para gerenciamento completo de motocicletas, perm
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/api/MaintenanceHistories` | Listar manutenções |
-| POST | `/api/MaintenanceHistories` | Criar registro de manutenção |
-| GET | `/api/MaintenanceHistories/{id}` | Detalhar manutenção |
-| PUT | `/api/MaintenanceHistories/{id}` | Atualizar manutenção |
-| DELETE | `/api/MaintenanceHistories/{id}` | Remover manutenção |
+| GET | `/api/Histories` | Listar manutenções |
+| POST | `/api/Histories` | Criar registro de manutenção |
+| GET | `/api/Histories/{id}` | Detalhar manutenção |
+| PUT | `/api/Histories/{id}` | Atualizar manutenção |
+| DELETE | `/api/Histories/{id}` | Remover manutenção |
 
 ## ▶️ Como Executar
 
