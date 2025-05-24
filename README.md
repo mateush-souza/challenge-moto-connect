@@ -1,4 +1,4 @@
-# 🏍️ MotoConnect API - V 0.1.1 - CP 02
+# 🏍️ MotoConnect API
 
 > RESTful API desenvolvida em ASP.NET Core com integração ao Oracle Database, como parte do Challenge FIAP 2025.
 
@@ -91,7 +91,7 @@ Program.cs            # Configuração de endpoints e serviços
 ## 👨‍💻 Desenvolvedores
 
 - **Mateus H. Souza** - RM: 558424
-- **Gustavo Lazzuri** - RM: 556772  
+- **Lucas Fialho** - RM: 557884
 - **Cauan Passos** - RM: 555466
 
 ## 📄 Licença
