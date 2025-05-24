@@ -56,14 +56,7 @@ O MotoConnect é uma solução para gerenciamento completo de motocicletas, perm
    git clone https://github.com/seuusuario/seurepo.git
    ```
 
-2. **Configure a ConnectionString** no `appsettings.json` com suas credenciais Oracle:
-   ```json
-   {
-     "ConnectionStrings": {
-       "DefaultConnection": "User Id=seu_usuario;Password=sua_senha;Data Source=seu_datasource;"
-     }
-   }
-   ```
+2. **Configure a ConnectionString** no `appsettings.json` já está pré configurado o acesso com minhas credenciais e as tabelas já estão criadas
 
 3. **Execute os comandos:**
    ```bash
