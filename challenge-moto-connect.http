@@ -1,4 +1,4 @@
-@challenge_moto_connect_HostAddress = http://localhost:5148
+@challenge_moto_connect_HostAddress = http://localhost:5148/swagger
 
 GET {{challenge_moto_connect_HostAddress}}/weatherforecast/
 Accept: application/json

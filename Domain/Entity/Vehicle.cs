@@ -3,13 +3,8 @@ using challenge_moto_connect.Domain.Interfaces;
 
 namespace challenge_moto_connect.Domain.Entity
 {
-    public class Vehicle : ICancel
+    public class Vehicle
     {
-        #region ICancel Properties
-        public Guid UserCancelID { get; set; }
-        public bool IsCancel { get; set; }
-        #endregion
-
         public Guid VehicleId { get; set; }
 
         private string _licensePlate;
@@ -34,8 +29,6 @@ namespace challenge_moto_connect.Domain.Entity
             VehicleId = id;
             LicensePlate = licensePlate; 
             VehicleModel = vehicleModel;
-            IsCancel = false;
-            UserCancelID = Guid.Empty;
         }
 
         private bool IsValidLicensePlate(string licensePlate)

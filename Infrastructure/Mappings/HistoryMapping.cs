@@ -7,9 +7,9 @@ namespace challenge_moto_connect.Infrastructure.Mappings
     /// <summary>
     /// Mapeamento da entidade MaintenanceHistory para o banco de dados.
     /// </summary>
-    public class MaintenanceHistoryMapping : IEntityTypeConfiguration<MaintenanceHistory>
+    public class HistoryMapping : IEntityTypeConfiguration<History>
     {
-        public void Configure(EntityTypeBuilder<MaintenanceHistory> builder)
+        public void Configure(EntityTypeBuilder<History> builder)
         {
             builder.ToTable("MaintenanceHistories");
 
@@ -26,6 +26,9 @@ namespace challenge_moto_connect.Infrastructure.Mappings
                 .IsRequired();
 
             builder.Property(m => m.MaintenanceDate)
+                .IsRequired();
+
+            builder.Property(m => m.StatusModel)
                 .IsRequired();
 
             builder.Property(m => m.Description)

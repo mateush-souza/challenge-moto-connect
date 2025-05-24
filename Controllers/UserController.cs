@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mime;
 using challenge_moto_connect.Domain.Entity;
 using challenge_moto_connect.Infrastructure.Context;
 
@@ -7,6 +9,7 @@ namespace challenge_moto_connect.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Produces(MediaTypeNames.Application.Json)]
     public class UserController : ControllerBase
     {
         private readonly ChallengeMotoConnectContext _context;
@@ -16,27 +19,35 @@ namespace challenge_moto_connect.Controllers
             _context = context;
         }
 
-        // GET: api/user
         /// <summary>
-        /// Get all users
+        /// Retrieves all users.
         /// </summary>
-        /// <response code="200">Return all users</response>
-        /// <response code="404">No User Found</response>
-        /// <response code="500">Internal server error</response>
+        /// <remarks>
+        /// Returns <see cref="IEnumerable{User}"/> representing every user in the system.
+        /// </remarks>
+        /// <returns>A list of <see cref="User"/> objects.</returns>
+        /// <response code="200">Successful operation. The response body contains the list of users.</response>
+        /// <response code="500">Unexpected server error.</response>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<User>>> GetUser()
         {
-            return await _context.Users.ToListAsync();
+            return Ok(await _context.Users.ToListAsync());
         }
 
-        // GET: api/Users/5
         /// <summary>
-        /// Get all users
+        /// Retrieves a user by their unique identifier.
         /// </summary>
-        /// <response code="200">Return all users</response>
-        /// <response code="404">No User Found</response>
-        /// <response code="500">Internal server error</response>
-        [HttpGet("{id}")]
+        /// <param name="id">The user's unique identifier.</param>
+        /// <returns>The requested <see cref="User"/> if found.</returns>
+        /// <response code="200">User found and returned successfully.</response>
+        /// <response code="404">User not found.</response>
+        /// <response code="500">Unexpected server error.</response>
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<User>> GetUser(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -46,18 +57,24 @@ namespace challenge_moto_connect.Controllers
                 return NotFound();
             }
 
-            return user;
+            return Ok(user);
         }
 
-        // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         /// <summary>
-        /// Get all users
+        /// Updates an existing user.
         /// </summary>
-        /// <response code="200">Return all users</response>
-        /// <response code="404">No User Found</response>
-        /// <response code="500">Internal server error</response>
-        [HttpPut("{id}")]
+        /// <param name="id">The identifier of the user to update.</param>
+        /// <param name="user">The updated user information.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">User successfully updated.</response>
+        /// <response code="400">The ID in the URL does not match the user object.</response>
+        /// <response code="404">User not found.</response>
+        /// <response code="500">Unexpected server error.</response>
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> PutUser(Guid id, User user)
         {
             if (id != user.UserID)
@@ -86,31 +103,38 @@ namespace challenge_moto_connect.Controllers
             return NoContent();
         }
 
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         /// <summary>
-        /// Get all users
+        /// Creates a new user.
         /// </summary>
-        /// <response code="200">Return all users</response>
-        /// <response code="404">No User Found</response>
-        /// <response code="500">Internal server error</response>
+        /// <param name="user">The user to create.</param>
+        /// <returns>The newly created user.</returns>
+        /// <response code="201">User successfully created.</response>
+        /// <response code="400">Invalid user data provided.</response>
+        /// <response code="500">Unexpected server error.</response>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<User>> PostUser(User user)
         {
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.UserID }, user);
+            return CreatedAtAction(nameof(GetUser), new { id = user.UserID }, user);
         }
 
-        // DELETE: api/Users/5
         /// <summary>
-        /// Get all users
+        /// Deletes a user.
         /// </summary>
-        /// <response code="200">Return all users</response>
-        /// <response code="404">No User Found</response>
-        /// <response code="500">Internal server error</response>
-        [HttpDelete("{id}")]
+        /// <param name="id">The ID of the user to delete.</param>
+        /// <returns>No content.</returns>
+        /// <response code="204">User successfully deleted.</response>
+        /// <response code="404">User not found.</response>
+        /// <response code="500">Unexpected server error.</response>
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             var user = await _context.Users.FindAsync(id);

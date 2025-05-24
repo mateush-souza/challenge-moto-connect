@@ -20,14 +20,6 @@ namespace challenge_moto_connect.Infra.Data.Mappings
 
             builder.Property(v => v.VehicleModel)
                    .IsRequired();
-
-            // Aqui está a correção necessária
-            builder.Property(v => v.IsCancel)
-                   .HasColumnType("NUMBER(1)") // Define explicitamente o tipo correto para Oracle
-                   .IsRequired();
-
-            builder.Property(v => v.UserCancelID)
-                   .IsRequired();
         }
     }
 }

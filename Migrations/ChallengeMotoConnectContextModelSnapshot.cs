@@ -22,7 +22,7 @@ namespace challengemotoconnect.Migrations
 
             OracleModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("challenge_moto_connect.Domain.Entity.MaintenanceHistory", b =>
+            modelBuilder.Entity("challenge_moto_connect.Domain.Entity.History", b =>
                 {
                     b.Property<Guid>("MaintenanceHistoryID")
                         .ValueGeneratedOnAdd()
@@ -35,6 +35,9 @@ namespace challengemotoconnect.Migrations
 
                     b.Property<DateTime>("MaintenanceDate")
                         .HasColumnType("TIMESTAMP(7)");
+
+                    b.Property<int>("StatusModel")
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<Guid>("UserID")
                         .HasColumnType("RAW(16)");
@@ -83,16 +86,10 @@ namespace challengemotoconnect.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("RAW(16)");
 
-                    b.Property<bool>("IsCancel")
-                        .HasColumnType("NUMBER(1)");
-
                     b.Property<string>("LicensePlate")
                         .IsRequired()
                         .HasMaxLength(8)
                         .HasColumnType("NVARCHAR2(8)");
-
-                    b.Property<Guid>("UserCancelID")
-                        .HasColumnType("RAW(16)");
 
                     b.Property<int>("VehicleModel")
                         .HasColumnType("NUMBER(10)");

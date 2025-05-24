@@ -17,25 +17,27 @@ namespace challenge_moto_connect.Controllers
         }
 
         /// <summary>
-        /// Get all vehicles
+        /// Retrieves all vehicles.
         /// </summary>
-        /// <response code="200">Return all vehicles</response>
-        /// <response code="404">No vehicles found</response>
-        /// <response code="500">Internal server error</response>
+        /// <returns>List of vehicles.</returns>
+        /// <response code="200">Returns the list of vehicles</response>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<Vehicle>), 200)]
         public async Task<ActionResult<IEnumerable<Vehicle>>> GetVehicles()
         {
             return await _context.Vehicles.ToListAsync();
         }
 
-        // GET: api/Vehicles/5
         /// <summary>
-        /// Get all vehicles
+        /// Retrieves a specific vehicle by unique ID.
         /// </summary>
-        /// <response code="200">Return all vehicles</response>
-        /// <response code="404">No vehicles found</response>
-        /// <response code="500">Internal server error</response>
+        /// <param name="id">Vehicle ID</param>
+        /// <returns>A single vehicle</returns>
+        /// <response code="200">Returns the requested vehicle</response>
+        /// <response code="404">If the vehicle is not found</response>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(Vehicle), 200)]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<Vehicle>> GetVehicle(Guid id)
         {
             var vehicle = await _context.Vehicles.FindAsync(id);
@@ -48,15 +50,20 @@ namespace challenge_moto_connect.Controllers
             return vehicle;
         }
 
-        // PUT: api/Vehicles/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         /// <summary>
-        /// Get all vehicles
+        /// Updates an existing vehicle.
         /// </summary>
-        /// <response code="200">Return all vehicles</response>
-        /// <response code="404">No vehicles found</response>
+        /// <param name="id">Vehicle ID</param>
+        /// <param name="vehicle">Updated vehicle object</param>
+        /// <response code="204">Vehicle successfully updated</response>
+        /// <response code="400">Bad request</response>
+        /// <response code="404">Vehicle not found</response>
         /// <response code="500">Internal server error</response>
         [HttpPut("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
         public async Task<IActionResult> PutVehicle(Guid id, [FromBody] Vehicle vehicle)
         {
             if (!ModelState.IsValid)
@@ -86,8 +93,6 @@ namespace challenge_moto_connect.Controllers
             {
                 existingVehicle.LicensePlate = vehicle.LicensePlate;
                 existingVehicle.VehicleModel = vehicle.VehicleModel;
-                existingVehicle.IsCancel = vehicle.IsCancel;
-                existingVehicle.UserCancelID = vehicle.UserCancelID;
 
                 await _context.SaveChangesAsync();
             }
@@ -104,28 +109,26 @@ namespace challenge_moto_connect.Controllers
             }
             catch (Exception ex)
             {
-                // Log do erro com detalhes para debug
                 Console.WriteLine($"Erro ao atualizar veículo: {ex.Message}");
                 if (ex.InnerException != null)
                 {
                     Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
                 }
 
-                // Retornar erro com detalhes para facilitar diagnóstico
                 return StatusCode(500, new { error = "Erro interno", message = ex.Message, innerException = ex.InnerException?.Message });
             }
 
             return NoContent();
         }
-        // POST: api/Vehicles
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+
         /// <summary>
-        /// Get all vehicles
+        /// Creates a new vehicle.
         /// </summary>
-        /// <response code="200">Return all vehicles</response>
-        /// <response code="404">No vehicles found</response>
-        /// <response code="500">Internal server error</response>
+        /// <param name="vehicle">Vehicle to create</param>
+        /// <returns>The newly created vehicle</returns>
+        /// <response code="201">Vehicle created successfully</response>
         [HttpPost]
+        [ProducesResponseType(typeof(Vehicle), 201)]
         public async Task<ActionResult<Vehicle>> PostVehicle(Vehicle vehicle)
         {
             _context.Vehicles.Add(vehicle);
@@ -134,14 +137,15 @@ namespace challenge_moto_connect.Controllers
             return CreatedAtAction("GetVehicle", new { id = vehicle.VehicleId }, vehicle);
         }
 
-        // DELETE: api/Vehicles/5
         /// <summary>
-        /// Get all vehicles
+        /// Deletes a specific vehicle.
         /// </summary>
-        /// <response code="200">Return all vehicles</response>
-        /// <response code="404">No vehicles found</response>
-        /// <response code="500">Internal server error</response>
+        /// <param name="id">Vehicle ID</param>
+        /// <response code="204">Vehicle successfully deleted</response>
+        /// <response code="404">Vehicle not found</response>
         [HttpDelete("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteVehicle(Guid id)
         {
             var vehicle = await _context.Vehicles.FindAsync(id);

@@ -11,13 +11,13 @@ namespace challenge_moto_connect.Infrastructure.Context
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<User> Users { get; set; }
 
-        public DbSet<MaintenanceHistory> MaintenanceHistories { get; set; }
+        public DbSet<History> Histories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new VehicleMapping());
             modelBuilder.ApplyConfiguration(new UserMapping());
-            modelBuilder.ApplyConfiguration(new MaintenanceHistoryMapping());
+            modelBuilder.ApplyConfiguration(new HistoryMapping());
 
         }
 

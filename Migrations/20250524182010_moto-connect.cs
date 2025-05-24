@@ -18,6 +18,7 @@ namespace challengemotoconnect.Migrations
                     MaintenanceHistoryID = table.Column<Guid>(type: "RAW(16)", nullable: false),
                     VehicleID = table.Column<Guid>(type: "RAW(16)", nullable: false),
                     UserID = table.Column<Guid>(type: "RAW(16)", nullable: false),
+                    StatusModel = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     MaintenanceDate = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
                     Description = table.Column<string>(type: "NVARCHAR2(500)", maxLength: 500, nullable: false)
                 },
@@ -47,8 +48,6 @@ namespace challengemotoconnect.Migrations
                 columns: table => new
                 {
                     VehicleId = table.Column<Guid>(type: "RAW(16)", nullable: false),
-                    UserCancelID = table.Column<Guid>(type: "RAW(16)", nullable: false),
-                    IsCancel = table.Column<bool>(type: "NUMBER(1)", nullable: false),
                     LicensePlate = table.Column<string>(type: "NVARCHAR2(8)", maxLength: 8, nullable: false),
                     VehicleModel = table.Column<int>(type: "NUMBER(10)", nullable: false)
                 },
