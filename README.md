@@ -1,21 +1,25 @@
 # 🏍️ MotoConnect API
 
-> RESTful API desenvolvida em ASP.NET Core com integração ao Oracle Database, como parte do Challenge FIAP 2025.
+> RESTful API desenvolvida em ASP.NET Core, seguindo os princípios de Clean Architecture e Domain-Driven Design (DDD), com integração ao Oracle Database. Este projeto é uma refatoração do Challenge FIAP 2025, com foco em modularidade, testabilidade e boas práticas de Clean Code.
 
 [![.NET Core](https://img.shields.io/badge/.NET%20Core-8.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=black)](https://swagger.io/)
 
 ## 📋 Sobre
 
-O MotoConnect é uma solução para gerenciamento completo de motocicletas, permitindo o controle de veículos, usuários e histórico de manutenções. Esta API fornece uma interface backend robusta com suporte completo a operações CRUD para todas as entidades do sistema.
+O MotoConnect é uma solução robusta para gerenciamento completo de motocicletas, abrangendo o controle de veículos, usuários e histórico de manutenções. Esta API foi refatorada para aderir aos princípios de Clean Architecture e DDD, garantindo uma base de código mais organizada, escalável e de fácil manutenção. Ela fornece uma interface backend completa com suporte a operações CRUD para todas as entidades do sistema, com foco em segurança, performance e clareza de código.
 
 ## 📦 Tecnologias Utilizadas
 
 - **ASP.NET Core 8**
 - **Oracle Database** (via Oracle.EntityFrameworkCore)
 - **Entity Framework Core**
-- **Swagger** (Swashbuckle)
+- **Swagger/OpenAPI** (Swashbuckle)
 - **C#**
+- **Clean Architecture**
+- **Domain-Driven Design (DDD)**
+- **Value Objects**
+- **Princípios SOLID**
 
 ## 🔗 Endpoints Disponíveis
 
@@ -56,36 +60,45 @@ O MotoConnect é uma solução para gerenciamento completo de motocicletas, perm
    git clone https://github.com/seuusuario/seurepo.git
    ```
 
-2. já está pré configurado o acesso com minhas credenciais e as tabelas já estão criadas no banco de dados
+2. **Configuração do Banco de Dados:**
+   - Certifique-se de ter acesso a um banco de dados Oracle.
+   - Atualize a string de conexão no arquivo `src/Api/appsettings.json` com suas credenciais e detalhes do banco de dados:
+     ```json
+     "ConnectionStrings": {
+         "Oracle": "Data Source=<seu_servidor>:<sua_porta>/<seu_servico>;User ID=<seu_usuario>;Password=<sua_senha>;"
+     }
+     ```
+   - Navegue até o diretório `src/Infrastructure` e aplique as migrações para criar o esquema do banco de dados:
+     ```bash
+     dotnet ef database update --project Infrastructure.csproj --startup-project ../Api/Api.csproj
+     ```
 
 3. **Execute os comandos:**
    ```bash
    dotnet restore
    dotnet build
-   dotnet run
+   dotnet run --project src/Api/Api.csproj
    ```
 
-4. **Acesse a documentação Swagger:** O app está em modo Development por isso rode com o método HTTP e será redirecionado automaticamente, caso acesse com HTTPS deverá inserir a URL manual
-   ```
-   https://localhost:5214/swagger
-   ```
+4. **Acesse a documentação Swagger:**
+   Com a aplicação em execução, acesse `https://localhost:5214/swagger` (ou a porta configurada) no seu navegador para explorar os endpoints da API.
 
 ## 📁 Estrutura do Projeto
 
 ```
-/Controllers          # Controllers REST (Vehicle, User, Maintenance)
-/Models               # Entidades do domínio
-/Data                 # Contexto Oracle (DbContext)
-/Migrations           # Scripts de criação via EF Core
-Program.cs            # Configuração de endpoints e serviços
+. (raiz do projeto)
+├── src
+│   ├── Api             # Camada de Apresentação (Controllers, Program.cs, appsettings.json)
+│   ├── Application     # Camada de Aplicação (DTOs, Services, Interfaces de Serviços)
+│   ├── Domain          # Camada de Domínio (Entidades, Value Objects, Interfaces de Repositório)
+│   └── Infrastructure  # Camada de Infraestrutura (Contexto EF Core, Mapeamentos, Repositórios)
+├── chalenge-moto-connect.sln # Arquivo de solução do Visual Studio
+└── README.md         # Este arquivo
 ```
 
-## 👨‍💻 Desenvolvedores
-
-- **Mateus H. Souza** - RM: 558424
-- **Lucas Fialho** - RM: 557884
-- **Cauan Passos** - RM: 555466
 
 ## 📄 Licença
 
 Este projeto possui licença para uso educacional como parte de avaliação acadêmica.
+
+
