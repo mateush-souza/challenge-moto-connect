@@ -11,7 +11,7 @@ O MotoConnect é uma solução robusta para gerenciamento completo de motociclet
 
 ## 📦 Tecnologias Utilizadas
 
-- **ASP.NET Core 8**
+- **ASP.NET Core 9**
 - **Oracle Database** (via Oracle.EntityFrameworkCore)
 - **Entity Framework Core**
 - **Swagger/OpenAPI** (Swashbuckle)
