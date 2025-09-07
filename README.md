@@ -96,6 +96,10 @@ O MotoConnect é uma solução robusta para gerenciamento completo de motociclet
 └── README.md         # Este arquivo
 ```
 
+## 👨‍💻 Desenvolvedores
+
+- **Mateus H. Souza** - RM: 558424
+- **Cauan Passos** - RM: 555466
 
 ## 📄 Licença
 
