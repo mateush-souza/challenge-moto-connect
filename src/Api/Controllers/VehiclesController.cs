@@ -49,6 +49,10 @@ namespace challenge_moto_connect.Api.Controllers
             {
                 await _vehicleService.UpdateVehicleAsync(id, vehicleDto);
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
             catch (KeyNotFoundException)
             {
                 return NotFound($"Veículo com ID {id} não encontrado.");
@@ -70,8 +74,15 @@ namespace challenge_moto_connect.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<VehicleDTO>> PostVehicle(VehicleDTO vehicleDto)
         {
-            var createdVehicle = await _vehicleService.CreateVehicleAsync(vehicleDto);
-            return CreatedAtAction(nameof(GetVehicle), new { id = createdVehicle.VehicleId }, createdVehicle);
+            try
+            {
+                var createdVehicle = await _vehicleService.CreateVehicleAsync(vehicleDto);
+                return CreatedAtAction(nameof(GetVehicle), new { id = createdVehicle.VehicleId }, createdVehicle);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpDelete("{id:guid}")]
