@@ -52,3 +52,4 @@ namespace challenge_moto_connect.Domain.Entity;
     }
 
 
+

@@ -1,8 +1,10 @@
 using challenge_moto_connect.Application.DTOs;
+using challenge_moto_connect.Application.DTOs.Pagination;
 using challenge_moto_connect.Domain.Entity;
 using challenge_moto_connect.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace challenge_moto_connect.Application.Services
@@ -24,7 +26,8 @@ namespace challenge_moto_connect.Application.Services
                 MaintenanceHistoryID = h.MaintenanceHistoryID,
                 Description = h.Description,
                 MaintenanceDate = h.MaintenanceDate,
-                VehicleID = h.VehicleID
+                VehicleID = h.VehicleID,
+                UserID = h.UserID
             });
         }
 
@@ -38,7 +41,8 @@ namespace challenge_moto_connect.Application.Services
                 MaintenanceHistoryID = history.MaintenanceHistoryID,
                 Description = history.Description,
                 MaintenanceDate = history.MaintenanceDate,
-                VehicleID = history.VehicleID
+                VehicleID = history.VehicleID,
+                UserID = history.UserID
             };
         }
 
@@ -49,7 +53,8 @@ namespace challenge_moto_connect.Application.Services
                 MaintenanceHistoryID = Guid.NewGuid(),
                 Description = historyDto.Description,
                 MaintenanceDate = historyDto.MaintenanceDate,
-                VehicleID = historyDto.VehicleID
+                VehicleID = historyDto.VehicleID,
+                UserID = historyDto.UserID
             };
             await _historyRepository.AddAsync(history);
             return historyDto;
@@ -63,6 +68,7 @@ namespace challenge_moto_connect.Application.Services
             history.Description = historyDto.Description;
             history.MaintenanceDate = historyDto.MaintenanceDate;
             history.VehicleID = historyDto.VehicleID;
+            history.UserID = historyDto.UserID;
 
             await _historyRepository.UpdateAsync(history);
         }
@@ -74,7 +80,23 @@ namespace challenge_moto_connect.Application.Services
 
             await _historyRepository.DeleteAsync(history.MaintenanceHistoryID);
         }
+
+        public async Task<PagedListDto<HistoryDTO>> GetPagedHistoriesAsync(PaginationParams paginationParams)
+        {
+            var histories = _historyRepository.GetAllAsQueryable();
+            var pagedHistories = PagedListDto<History>.ToPagedList(histories, paginationParams.PageNumber, paginationParams.PageSize);
+
+            var historyDtos = pagedHistories.Items.Select(h => new HistoryDTO
+            {
+                MaintenanceHistoryID = h.MaintenanceHistoryID,
+                Description = h.Description,
+                MaintenanceDate = h.MaintenanceDate,
+                VehicleID = h.VehicleID,
+                UserID = h.UserID
+            }).ToList();
+
+            return new PagedListDto<HistoryDTO>(historyDtos, pagedHistories.TotalCount, pagedHistories.CurrentPage, pagedHistories.PageSize);
+        }
     }
 }
-
 

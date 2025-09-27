@@ -25,33 +25,33 @@ O MotoConnect é uma solução robusta para gerenciamento completo de motociclet
 
 ### 🔧 Vehicles
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/api/Vehicles` | Listar todas as motos |
-| POST | `/api/Vehicles` | Criar nova moto |
-| GET | `/api/Vehicles/{id}` | Buscar moto por ID |
-| PUT | `/api/Vehicles/{id}` | Atualizar moto |
-| DELETE | `/api/Vehicles/{id}` | Deletar moto |
+| Método | Endpoint | Descrição | Status Codes |
+|--------|----------|-----------|--------------|
+| GET | `/api/Vehicles` | Listar todas as motos | `200 OK` |
+| POST | `/api/Vehicles` | Criar nova moto | `201 Created`, `400 Bad Request` |
+| GET | `/api/Vehicles/{id}` | Buscar moto por ID | `200 OK`, `404 Not Found` |
+| PUT | `/api/Vehicles/{id}` | Atualizar moto | `204 No Content`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error` |
+| DELETE | `/api/Vehicles/{id}` | Deletar moto | `204 No Content`, `404 Not Found` |
 
 ### 👤 Users
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/api/User` | Listar usuários |
-| POST | `/api/User` | Criar usuário |
-| GET | `/api/User/{id}` | Buscar usuário por ID |
-| PUT | `/api/User/{id}` | Atualizar usuário |
-| DELETE | `/api/User/{id}` | Deletar usuário |
+| Método | Endpoint | Descrição | Status Codes |
+|--------|----------|-----------|--------------|
+| GET | `/api/User` | Listar usuários | `200 OK` |
+| POST | `/api/User` | Criar usuário | `201 Created` |
+| GET | `/api/User/{id}` | Buscar usuário por ID | `200 OK`, `404 Not Found` |
+| PUT | `/api/User/{id}` | Atualizar usuário | `204 No Content`, `400 Bad Request`, `404 Not Found` |
+| DELETE | `/api/User/{id}` | Deletar usuário | `204 No Content`, `404 Not Found` |
 
 ### 🛠️ MaintenanceHistories
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/api/Histories` | Listar manutenções |
-| POST | `/api/Histories` | Criar registro de manutenção |
-| GET | `/api/Histories/{id}` | Detalhar manutenção |
-| PUT | `/api/Histories/{id}` | Atualizar manutenção |
-| DELETE | `/api/Histories/{id}` | Remover manutenção |
+| Método | Endpoint | Descrição | Status Codes |
+|--------|----------|-----------|--------------|
+| GET | `/api/Histories` | Listar manutenções | `200 OK` |
+| POST | `/api/Histories` | Criar registro de manutenção | `201 Created` |
+| GET | `/api/Histories/{id}` | Detalhar manutenção | `200 OK`, `404 Not Found` |
+| PUT | `/api/Histories/{id}` | Atualizar manutenção | `204 No Content`, `400 Bad Request`, `404 Not Found` |
+| DELETE | `/api/Histories/{id}` | Remover manutenção | `204 No Content`, `404 Not Found` |
 
 ## ▶️ Como Executar
 
@@ -77,7 +77,7 @@ O MotoConnect é uma solução robusta para gerenciamento completo de motociclet
    ```bash
    dotnet restore
    dotnet build
-   dotnet run --project src/Api/Api.csproj
+   dotnet run --project src/Api/Api.csproj --launch-profile "https"
    ```
 
 4. **Acesse a documentação Swagger:**
@@ -104,5 +104,4 @@ O MotoConnect é uma solução robusta para gerenciamento completo de motociclet
 ## 📄 Licença
 
 Este projeto possui licença para uso educacional como parte de avaliação acadêmica.
-
 

@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using challenge_moto_connect.Application.DTOs;
 using challenge_moto_connect.Application.Services;
+using challenge_moto_connect.Application.DTOs.Pagination;
+using challenge_moto_connect.Application.DTOs.HATEOAS;
+using System.Text.Json;
 
 namespace challenge_moto_connect.Api.Controllers
 {
@@ -19,13 +22,33 @@ namespace challenge_moto_connect.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUser()
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers([FromQuery] PaginationParams paginationParams)
         {
-            var users = await _userService.GetAllUsersAsync();
-            return Ok(users);
+            var pagedUsers = await _userService.GetPagedUsersAsync(paginationParams);
+
+            var metadata = new
+            {
+                pagedUsers.TotalCount,
+                pagedUsers.PageSize,
+                pagedUsers.CurrentPage,
+                pagedUsers.TotalPages,
+                pagedUsers.HasNext,
+                pagedUsers.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+
+            foreach (var user in pagedUsers.Items)
+            {
+                user.Links.Add(new LinkDto(Url.Link(nameof(GetUser), new { id = user.UserID }), "self", "GET"));
+                user.Links.Add(new LinkDto(Url.Link(nameof(PutUser), new { id = user.UserID }), "update_user", "PUT"));
+                user.Links.Add(new LinkDto(Url.Link(nameof(DeleteUser), new { id = user.UserID }), "delete_user", "DELETE"));
+            }
+
+            return Ok(pagedUsers.Items);
         }
 
-        [HttpGet("{id:guid}")]
+        [HttpGet("{id:guid}", Name = nameof(GetUser))]
         public async Task<ActionResult<UserDTO>> GetUser(Guid id)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -35,10 +58,14 @@ namespace challenge_moto_connect.Api.Controllers
                 return NotFound();
             }
 
+            user.Links.Add(new LinkDto(Url.Link(nameof(GetUser), new { id = user.UserID }), "self", "GET"));
+            user.Links.Add(new LinkDto(Url.Link(nameof(PutUser), new { id = user.UserID }), "update_user", "PUT"));
+            user.Links.Add(new LinkDto(Url.Link(nameof(DeleteUser), new { id = user.UserID }), "delete_user", "DELETE"));
+
             return Ok(user);
         }
 
-        [HttpPut("{id:guid}")]
+        [HttpPut("{id:guid}", Name = nameof(PutUser))]
         public async Task<IActionResult> PutUser(Guid id, UserDTO userDto)
         {
             if (id != userDto.UserID)
@@ -58,14 +85,19 @@ namespace challenge_moto_connect.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost]
+        [HttpPost(Name = nameof(PostUser))]
         public async Task<ActionResult<UserDTO>> PostUser(UserDTO userDto)
         {
             var createdUser = await _userService.CreateUserAsync(userDto);
+            
+            createdUser.Links.Add(new LinkDto(Url.Link(nameof(GetUser), new { id = createdUser.UserID }), "self", "GET"));
+            createdUser.Links.Add(new LinkDto(Url.Link(nameof(PutUser), new { id = createdUser.UserID }), "update_user", "PUT"));
+            createdUser.Links.Add(new LinkDto(Url.Link(nameof(DeleteUser), new { id = createdUser.UserID }), "delete_user", "DELETE"));
+
             return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserID }, createdUser);
         }
 
-        [HttpDelete("{id:guid}")]
+        [HttpDelete("{id:guid}", Name = nameof(DeleteUser))]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             try
@@ -81,5 +113,4 @@ namespace challenge_moto_connect.Api.Controllers
         }
     }
 }
-
 

@@ -1,14 +1,9 @@
-using challenge_moto_connect.Domain.Interfaces;
 using challenge_moto_connect.Domain.ValueObjects;
 
 namespace challenge_moto_connect.Domain.Entity
 {
-    public class User : ICancel
+    public class User
     {
-        #region ICancel Properties
-        public Guid UserCancelID { get; set; }
-        public bool IsCancel { get; set; }
-        #endregion
 
         public Guid UserID { get; set; }
         public Email Email { get; private set; }
@@ -23,8 +18,7 @@ namespace challenge_moto_connect.Domain.Entity
             Email = email;
             Password = password;
             Type = type;
-            IsCancel = false;
-            UserCancelID = Guid.Empty;
+
         }
 
         public void UpdateEmail(Email newEmail)

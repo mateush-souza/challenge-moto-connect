@@ -1,9 +1,12 @@
- using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using challenge_moto_connect.Infrastructure;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using challenge_moto_connect.Application.Services;
+using challenge_moto_connect.Domain.Interfaces;
+using challenge_moto_connect.Infrastructure.Persistence.Repositories;
+using challenge_moto_connect.Infrastructure.Persistence.Context;
 
 namespace challenge_moto_connect
 {
@@ -13,7 +16,7 @@ namespace challenge_moto_connect
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
-			builder.Services.AddControllers();
+			builder.Services.AddControllers().AddNewtonsoftJson();
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen(x =>
 			{
@@ -34,6 +37,8 @@ namespace challenge_moto_connect
 			builder.Services.AddScoped<IUserService, UserService>();
 			builder.Services.AddScoped<IHistoryService, HistoryService>();
 			builder.Services.AddScoped<IVehicleService, VehicleService>();
+			builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+			builder.Services.AddHttpContextAccessor();
 
 			var app = builder.Build();
 
@@ -42,10 +47,7 @@ namespace challenge_moto_connect
 			app.UseSwaggerUI();
 
 			// Only redirect to HTTPS during Development to avoid issues on Linux App Service
-			if (app.Environment.IsDevelopment())
-			{
-				app.UseHttpsRedirection();
-			}
+			app.UseHttpsRedirection();
 
 			app.UseAuthorization();
 
@@ -55,5 +57,4 @@ namespace challenge_moto_connect
 		}
 	}
 }
-
 

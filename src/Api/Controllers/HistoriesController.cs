@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using challenge_moto_connect.Application.DTOs;
 using challenge_moto_connect.Application.Services;
+using challenge_moto_connect.Application.DTOs.Pagination;
+using challenge_moto_connect.Application.DTOs.HATEOAS;
+using System.Text.Json;
 
 namespace challenge_moto_connect.Api.Controllers
 {
@@ -18,14 +21,34 @@ namespace challenge_moto_connect.Api.Controllers
             _historyService = historyService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<HistoryDTO>>> GetMaintenanceHistories()
+        [HttpGet(Name = nameof(GetMaintenanceHistories))]
+        public async Task<ActionResult<IEnumerable<HistoryDTO>>> GetMaintenanceHistories([FromQuery] PaginationParams paginationParams)
         {
-            var histories = await _historyService.GetAllHistoriesAsync();
-            return Ok(histories);
+            var pagedHistories = await _historyService.GetPagedHistoriesAsync(paginationParams);
+
+            var metadata = new
+            {
+                pagedHistories.TotalCount,
+                pagedHistories.PageSize,
+                pagedHistories.CurrentPage,
+                pagedHistories.TotalPages,
+                pagedHistories.HasNext,
+                pagedHistories.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+
+            foreach (var history in pagedHistories.Items)
+            {
+                history.Links.Add(new LinkDto(Url.Link(nameof(GetMaintenanceHistory), new { id = history.MaintenanceHistoryID }), "self", "GET"));
+                history.Links.Add(new LinkDto(Url.Link(nameof(PutMaintenanceHistory), new { id = history.MaintenanceHistoryID }), "update_history", "PUT"));
+                history.Links.Add(new LinkDto(Url.Link(nameof(DeleteMaintenanceHistory), new { id = history.MaintenanceHistoryID }), "delete_history", "DELETE"));
+            }
+
+            return Ok(pagedHistories.Items);
         }
 
-        [HttpGet("{id:guid}")]
+        [HttpGet("{id:guid}", Name = nameof(GetMaintenanceHistory))]
         public async Task<ActionResult<HistoryDTO>> GetMaintenanceHistory(Guid id)
         {
             var history = await _historyService.GetHistoryByIdAsync(id);
@@ -33,10 +56,15 @@ namespace challenge_moto_connect.Api.Controllers
             {
                 return NotFound();
             }
+
+            history.Links.Add(new LinkDto(Url.Link(nameof(GetMaintenanceHistory), new { id = history.MaintenanceHistoryID }), "self", "GET"));
+            history.Links.Add(new LinkDto(Url.Link(nameof(PutMaintenanceHistory), new { id = history.MaintenanceHistoryID }), "update_history", "PUT"));
+            history.Links.Add(new LinkDto(Url.Link(nameof(DeleteMaintenanceHistory), new { id = history.MaintenanceHistoryID }), "delete_history", "DELETE"));
+
             return Ok(history);
         }
 
-        [HttpPut("{id:guid}")]
+        [HttpPut("{id:guid}", Name = nameof(PutMaintenanceHistory))]
         public async Task<IActionResult> PutMaintenanceHistory(Guid id, HistoryDTO historyDto)
         {
             if (id != historyDto.MaintenanceHistoryID)
@@ -56,14 +84,19 @@ namespace challenge_moto_connect.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost]
+        [HttpPost(Name = nameof(PostMaintenanceHistory))]
         public async Task<ActionResult<HistoryDTO>> PostMaintenanceHistory(HistoryDTO historyDto)
         {
             var createdHistory = await _historyService.CreateHistoryAsync(historyDto);
+
+            createdHistory.Links.Add(new LinkDto(Url.Link(nameof(GetMaintenanceHistory), new { id = createdHistory.MaintenanceHistoryID }), "self", "GET"));
+            createdHistory.Links.Add(new LinkDto(Url.Link(nameof(PutMaintenanceHistory), new { id = createdHistory.MaintenanceHistoryID }), "update_history", "PUT"));
+            createdHistory.Links.Add(new LinkDto(Url.Link(nameof(DeleteMaintenanceHistory), new { id = createdHistory.MaintenanceHistoryID }), "delete_history", "DELETE"));
+
             return CreatedAtAction(nameof(GetMaintenanceHistory), new { id = createdHistory.MaintenanceHistoryID }, createdHistory);
         }
 
-        [HttpDelete("{id:guid}")]
+        [HttpDelete("{id:guid}", Name = nameof(DeleteMaintenanceHistory))]
         public async Task<IActionResult> DeleteMaintenanceHistory(Guid id)
         {
             try
@@ -79,5 +112,4 @@ namespace challenge_moto_connect.Api.Controllers
         }
     }
 }
-
 

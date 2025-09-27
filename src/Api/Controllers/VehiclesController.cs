@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using challenge_moto_connect.Application.DTOs;
 using challenge_moto_connect.Application.Services;
+using challenge_moto_connect.Application.DTOs.Pagination;
+using challenge_moto_connect.Application.DTOs.HATEOAS;
+using System.Text.Json;
 
 namespace challenge_moto_connect.Api.Controllers
 {
@@ -17,14 +20,34 @@ namespace challenge_moto_connect.Api.Controllers
             _vehicleService = vehicleService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<VehicleDTO>>> GetVehicles()
+        [HttpGet(Name = nameof(GetVehicles))]
+        public async Task<ActionResult<IEnumerable<VehicleDTO>>> GetVehicles([FromQuery] PaginationParams paginationParams)
         {
-            var vehicles = await _vehicleService.GetAllVehiclesAsync();
-            return Ok(vehicles);
+            var pagedVehicles = await _vehicleService.GetPagedVehiclesAsync(paginationParams);
+
+            var metadata = new
+            {
+                pagedVehicles.TotalCount,
+                pagedVehicles.PageSize,
+                pagedVehicles.CurrentPage,
+                pagedVehicles.TotalPages,
+                pagedVehicles.HasNext,
+                pagedVehicles.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+
+            foreach (var vehicle in pagedVehicles.Items)
+            {
+                vehicle.Links.Add(new LinkDto(Url.Link(nameof(GetVehicle), new { id = vehicle.VehicleId }), "self", "GET"));
+                vehicle.Links.Add(new LinkDto(Url.Link(nameof(PutVehicle), new { id = vehicle.VehicleId }), "update_vehicle", "PUT"));
+                vehicle.Links.Add(new LinkDto(Url.Link(nameof(DeleteVehicle), new { id = vehicle.VehicleId }), "delete_vehicle", "DELETE"));
+            }
+
+            return Ok(pagedVehicles.Items);
         }
 
-        [HttpGet("{id:guid}")]
+        [HttpGet("{id:guid}", Name = nameof(GetVehicle))]
         public async Task<ActionResult<VehicleDTO>> GetVehicle(Guid id)
         {
             var vehicle = await _vehicleService.GetVehicleByIdAsync(id);
@@ -34,10 +57,14 @@ namespace challenge_moto_connect.Api.Controllers
                 return NotFound();
             }
 
+            vehicle.Links.Add(new LinkDto(Url.Link(nameof(GetVehicle), new { id = vehicle.VehicleId }), "self", "GET"));
+            vehicle.Links.Add(new LinkDto(Url.Link(nameof(PutVehicle), new { id = vehicle.VehicleId }), "update_vehicle", "PUT"));
+            vehicle.Links.Add(new LinkDto(Url.Link(nameof(DeleteVehicle), new { id = vehicle.VehicleId }), "delete_vehicle", "DELETE"));
+
             return Ok(vehicle);
         }
 
-        [HttpPut("{id:guid}")]
+        [HttpPut("{id:guid}", Name = nameof(PutVehicle))]
         public async Task<IActionResult> PutVehicle(Guid id, [FromBody] VehicleDTO vehicleDto)
         {
             if (id != vehicleDto.VehicleId)
@@ -71,12 +98,17 @@ namespace challenge_moto_connect.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost]
+        [HttpPost(Name = nameof(PostVehicle))]
         public async Task<ActionResult<VehicleDTO>> PostVehicle(VehicleDTO vehicleDto)
         {
             try
             {
                 var createdVehicle = await _vehicleService.CreateVehicleAsync(vehicleDto);
+
+                createdVehicle.Links.Add(new LinkDto(Url.Link(nameof(GetVehicle), new { id = createdVehicle.VehicleId }), "self", "GET"));
+                createdVehicle.Links.Add(new LinkDto(Url.Link(nameof(PutVehicle), new { id = createdVehicle.VehicleId }), "update_vehicle", "PUT"));
+                createdVehicle.Links.Add(new LinkDto(Url.Link(nameof(DeleteVehicle), new { id = createdVehicle.VehicleId }), "delete_vehicle", "DELETE"));
+
                 return CreatedAtAction(nameof(GetVehicle), new { id = createdVehicle.VehicleId }, createdVehicle);
             }
             catch (ArgumentException ex)
@@ -85,7 +117,7 @@ namespace challenge_moto_connect.Api.Controllers
             }
         }
 
-        [HttpDelete("{id:guid}")]
+        [HttpDelete("{id:guid}", Name = nameof(DeleteVehicle))]
         public async Task<IActionResult> DeleteVehicle(Guid id)
         {
             try
@@ -101,5 +133,4 @@ namespace challenge_moto_connect.Api.Controllers
         }
     }
 }
-
 

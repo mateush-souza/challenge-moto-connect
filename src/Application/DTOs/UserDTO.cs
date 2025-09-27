@@ -1,6 +1,9 @@
+using System;
+using challenge_moto_connect.Application.DTOs.HATEOAS;
+
 namespace challenge_moto_connect.Application.DTOs
 {
-    public class UserDTO
+    public class UserDTO : BaseDto
     {
         public Guid UserID { get; set; }
         public string Email { get; set; }
@@ -8,5 +11,4 @@ namespace challenge_moto_connect.Application.DTOs
         public int Type { get; set; }
     }
 }
-
 
