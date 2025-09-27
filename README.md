@@ -81,7 +81,7 @@ O MotoConnect é uma solução robusta para gerenciamento completo de motociclet
    ```
 
 4. **Acesse a documentação Swagger:**
-   Com a aplicação em execução, acesse `https://localhost:5214/swagger` (ou a porta configurada) no seu navegador para explorar os endpoints da API.
+   Com a aplicação em execução, acesse `https://localhost:7224/swagger` (ou a porta configurada) no seu navegador para explorar os endpoints da API.
 
 ## 📁 Estrutura do Projeto
 
@@ -100,6 +100,7 @@ O MotoConnect é uma solução robusta para gerenciamento completo de motociclet
 
 - **Mateus H. Souza** - RM: 558424
 - **Cauan Passos** - RM: 555466
+- **Lucas Fialho** - RM: 557884
 
 ## 📄 Licença
 
