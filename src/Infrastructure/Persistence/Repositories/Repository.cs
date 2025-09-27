@@ -1,6 +1,7 @@
 using challenge_moto_connect.Domain.Interfaces;
 using challenge_moto_connect.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace challenge_moto_connect.Infrastructure.Persistence.Repositories
 {
@@ -23,6 +24,11 @@ namespace challenge_moto_connect.Infrastructure.Persistence.Repositories
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
+        }
+
+        public IQueryable<T> GetAllAsQueryable()
+        {
+            return _dbSet.AsQueryable();
         }
 
         public async Task AddAsync(T entity)
@@ -48,5 +54,4 @@ namespace challenge_moto_connect.Infrastructure.Persistence.Repositories
         }
     }
 }
-
 

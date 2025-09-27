@@ -29,20 +29,9 @@ namespace challenge_moto_connect.Infrastructure.Persistence.Mappings
                 .Property(u => u.Type)
                 .IsRequired();
 
-            var boolToNumberConverter = new ValueConverter<bool, int>(
-                v => v ? 1 : 0,
-                v => v == 1);
 
-            builder
-                .Property(u => u.IsCancel)
-                .HasConversion(boolToNumberConverter)
-                .HasColumnType("NUMBER(1)")
-                .IsRequired();
 
-            builder
-                .Property(u => u.UserCancelID)
-                .HasColumnType("RAW(16)")
-                .IsRequired();
+
         }
     }
 }

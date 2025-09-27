@@ -1,4 +1,5 @@
 using challenge_moto_connect.Application.DTOs;
+using challenge_moto_connect.Application.DTOs.Pagination;
 using challenge_moto_connect.Domain.Entity;
 using challenge_moto_connect.Domain.Interfaces;
 using challenge_moto_connect.Domain.ValueObjects;
@@ -66,7 +67,22 @@ namespace challenge_moto_connect.Application.Services
 
             await _userRepository.DeleteAsync(user.UserID);
         }
+
+        public async Task<PagedListDto<UserDTO>> GetPagedUsersAsync(PaginationParams paginationParams)
+        {
+            var users = _userRepository.GetAllAsQueryable(); // Assuming GetAllAsQueryable returns IQueryable<User>
+            var pagedUsers = PagedListDto<User>.ToPagedList(users, paginationParams.PageNumber, paginationParams.PageSize);
+
+            var userDtos = pagedUsers.Items.Select(u => new UserDTO
+            {
+                UserID = u.UserID,
+                Email = u.Email.Address,
+                Password = u.Password.Value,
+                Type = (int)u.Type
+            }).ToList();
+
+            return new PagedListDto<UserDTO>(userDtos, pagedUsers.TotalCount, pagedUsers.CurrentPage, pagedUsers.PageSize);
+        }
     }
 }
-
 

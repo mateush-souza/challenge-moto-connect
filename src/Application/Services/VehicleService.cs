@@ -1,9 +1,11 @@
 using challenge_moto_connect.Application.DTOs;
+using challenge_moto_connect.Application.DTOs.Pagination;
 using challenge_moto_connect.Domain.Entity;
 using challenge_moto_connect.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace challenge_moto_connect.Application.Services
 {
@@ -49,7 +51,12 @@ namespace challenge_moto_connect.Application.Services
                 VehicleModel = (VehicleModel)Enum.Parse(typeof(VehicleModel), vehicleDto.VehicleModel)
             };
             await _vehicleRepository.AddAsync(vehicle);
-            return vehicleDto;
+            return new VehicleDTO
+            {
+                VehicleId = vehicle.VehicleId,
+                LicensePlate = vehicle.LicensePlate,
+                VehicleModel = vehicle.VehicleModel.ToString()
+            };
         }
 
         public async Task UpdateVehicleAsync(Guid id, VehicleDTO vehicleDto)
@@ -70,7 +77,21 @@ namespace challenge_moto_connect.Application.Services
 
             await _vehicleRepository.DeleteAsync(vehicle.VehicleId);
         }
+
+        public async Task<PagedListDto<VehicleDTO>> GetPagedVehiclesAsync(PaginationParams paginationParams)
+        {
+            var vehicles = _vehicleRepository.GetAllAsQueryable();
+            var pagedVehicles = PagedListDto<Vehicle>.ToPagedList(vehicles, paginationParams.PageNumber, paginationParams.PageSize);
+
+            var vehicleDtos = pagedVehicles.Items.Select(v => new VehicleDTO
+            {
+                VehicleId = v.VehicleId,
+                LicensePlate = v.LicensePlate,
+                VehicleModel = v.VehicleModel.ToString()
+            }).ToList();
+
+            return new PagedListDto<VehicleDTO>(vehicleDtos, pagedVehicles.TotalCount, pagedVehicles.CurrentPage, pagedVehicles.PageSize);
+        }
     }
 }
-
 

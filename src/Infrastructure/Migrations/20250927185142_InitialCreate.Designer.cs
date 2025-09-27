@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Oracle.EntityFrameworkCore.Metadata;
 using challenge_moto_connect.Infrastructure.Persistence.Context;
@@ -11,9 +12,11 @@ using challenge_moto_connect.Infrastructure.Persistence.Context;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ChallengeMotoConnectContext))]
-    partial class ChallengeMotoConnectContextModelSnapshot : ModelSnapshot
+    [Migration("20250927185142_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
