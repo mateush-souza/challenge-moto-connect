@@ -100,6 +100,7 @@ O MotoConnect é uma solução robusta para gerenciamento completo de motociclet
 
 - **Mateus H. Souza** - RM: 558424
 - **Cauan Passos** - RM: 555466
+- **Lucas Fialho** - RM: 557884
 
 ## 📄 Licença
 
