@@ -19,9 +19,9 @@ namespace challenge_moto_connect.Infrastructure.Persistence.Context
                 .Build();
 
             var builder = new DbContextOptionsBuilder<ChallengeMotoConnectContext>();
-            var connectionString = configuration.GetConnectionString("Oracle");
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            builder.UseOracle(connectionString);
+            builder.UseSqlServer(connectionString);
 
             return new ChallengeMotoConnectContext(builder.Options);
         }
