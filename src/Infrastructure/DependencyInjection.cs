@@ -13,7 +13,7 @@ namespace challenge_moto_connect.Infrastructure
         {
             services.AddDbContext<ChallengeMotoConnectContext>(options =>
             {
-                options.UseOracle(configuration.GetConnectionString("Oracle"));
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
