@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Net.Mime;
 using challenge_moto_connect.Application.DTOs;
 using challenge_moto_connect.Application.Services;
@@ -12,8 +13,9 @@ namespace challenge_moto_connect.Api.Controllers
     /// <summary>
     /// Controller para gerenciamento de usuários
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
+    [Authorize]
     [Produces(MediaTypeNames.Application.Json)]
     public class UserController : ControllerBase
     {

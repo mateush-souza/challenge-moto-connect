@@ -1,108 +1,106 @@
-# 🏍️ MotoConnect API
+# 🏍️ Moto Connect - Challenge (4ª Entrega)
 
-> RESTful API desenvolvida em ASP.NET Core, seguindo os princípios de Clean Architecture e Domain-Driven Design (DDD), com integração ao Oracle Database. Este projeto é uma refatoração do Challenge FIAP 2025, com foco em modularidade, testabilidade e boas práticas de Clean Code.
+> API RESTful desenvolvida em ASP.NET Core 8.0, seguindo os princípios de Clean Architecture e Domain-Driven Design (DDD), com foco em boas práticas REST, segurança, observabilidade e Machine Learning.
 
 [![.NET Core](https://img.shields.io/badge/.NET%20Core-8.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=black)](https://swagger.io/)
+[![xUnit](https://img.shields.io/badge/Tests-xUnit-000000?style=flat-square&logo=xunit)](https://xunit.net/)
 
 ## 📋 Sobre
 
-O MotoConnect é uma solução robusta para gerenciamento completo de motocicletas, abrangendo o controle de veículos, usuários e histórico de manutenções. Esta API foi refatorada para aderir aos princípios de Clean Architecture e DDD, garantindo uma base de código mais organizada, escalável e de fácil manutenção. Ela fornece uma interface backend completa com suporte a operações CRUD para todas as entidades do sistema, com foco em segurança, performance e clareza de código.
+O Moto Connect é uma solução para gerenciamento de motocicletas. Esta versão da API foi atualizada para a 4ª entrega do Challenge, incorporando requisitos avançados de desenvolvimento, DevOps e Arquiteturas Disruptivas.
+
+## ✨ Requisitos da 4ª Entrega Implementados
+
+| Requisito | Pontuação | Status |
+| :--- | :--- | :--- |
+| **Health Checks** | 10 pts | Implementado no endpoint `/health`. |
+| **Versionamento da API** | 10 pts | Implementado via URL (`/api/v{version}/...`). |
+| **Segurança da API (JWT)** | 25 pts | Implementado autenticação via Bearer Token (JWT). |
+| **Integração ML.NET** | 25 pts | Adicionado endpoint de predição de manutenção (`/api/v1/ml/predict-maintenance`). |
+| **Testes Unitários com xUnit** | 30 pts | Projeto de testes (`challenge-moto-connect.Tests`) adicionado com testes unitários e de integração. |
+| **Estrutura para IoT/Visão Computacional** | - | Adicionado endpoint `/api/telemetry` e entidade `TelemetryData`. |
+| **Preparação para DevOps (App Service)** | - | Criados `script_bd.sql` e `azure_cli_scripts.md` para deploy na Azure. |
 
 ## 📦 Tecnologias Utilizadas
 
-- **ASP.NET Core 9**
-- **Oracle Database** (via Oracle.EntityFrameworkCore)
+- **ASP.NET Core 8.0**
 - **Entity Framework Core**
-- **Swagger/OpenAPI** (Swashbuckle)
-- **C#**
-- **Clean Architecture**
-- **Domain-Driven Design (DDD)**
-- **Value Objects**
-- **Princípios SOLID**
+- **JWT Bearer Authentication**
+- **ML.NET** (Machine Learning)
+- **xUnit & Moq** (Testes)
+- **Swagger/OpenAPI**
+- **Clean Architecture & DDD**
 
-## 🔗 Endpoints Disponíveis
+## 🔗 Endpoints Principais
 
-### 🔧 Vehicles
+| Método | Endpoint | Descrição | Segurança |
+| :--- | :--- | :--- | :--- |
+| **POST** | `/api/v1/auth/login` | Gera o token JWT para acesso. | **Livre** |
+| **GET** | `/health` | Verifica a saúde da API e do banco de dados. | **Livre** |
+| **POST** | `/api/v1/ml/predict-maintenance` | Predição de necessidade de manutenção (ML.NET). | **JWT** |
+| **POST** | `/api/telemetry` | Recebe dados de telemetria (IoT/Visão Computacional). | **Livre** |
+| **GET** | `/api/v1/users` | Lista usuários (com paginação e HATEOAS). | **JWT** |
+| **GET** | `/api/v1/vehicles` | Lista veículos (com paginação e HATEOAS). | **JWT** |
+| **GET** | `/api/v1/histories` | Lista históricos (com paginação e HATEOAS). | **JWT** |
 
-| Método | Endpoint | Descrição | Status Codes |
-|--------|----------|-----------|--------------|
-| GET | `/api/Vehicles` | Listar todas as motos | `200 OK` |
-| POST | `/api/Vehicles` | Criar nova moto | `201 Created`, `400 Bad Request` |
-| GET | `/api/Vehicles/{id}` | Buscar moto por ID | `200 OK`, `404 Not Found` |
-| PUT | `/api/Vehicles/{id}` | Atualizar moto | `204 No Content`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error` |
-| DELETE | `/api/Vehicles/{id}` | Deletar moto | `204 No Content`, `404 Not Found` |
+## 🔑 Como Obter e Usar o Token JWT
 
-### 👤 Users
+1.  **Obter o Token:**
+    Faça uma requisição `POST` para o endpoint de login:
+    - **URL:** `/api/v1/auth/login`
+    - **Body (JSON):**
+      ```json
+      {
+        "email": "seu_email@exemplo.com",
+        "password": "sua_senha"
+      }
+      ```
+    *Nota: A lógica de autenticação no `AuthController` é uma simulação. Para testes, use qualquer email/senha não vazios.*
 
-| Método | Endpoint | Descrição | Status Codes |
-|--------|----------|-----------|--------------|
-| GET | `/api/User` | Listar usuários | `200 OK` |
-| POST | `/api/User` | Criar usuário | `201 Created` |
-| GET | `/api/User/{id}` | Buscar usuário por ID | `200 OK`, `404 Not Found` |
-| PUT | `/api/User/{id}` | Atualizar usuário | `204 No Content`, `400 Bad Request`, `404 Not Found` |
-| DELETE | `/api/User/{id}` | Deletar usuário | `204 No Content`, `404 Not Found` |
-
-### 🛠️ MaintenanceHistories
-
-| Método | Endpoint | Descrição | Status Codes |
-|--------|----------|-----------|--------------|
-| GET | `/api/Histories` | Listar manutenções | `200 OK` |
-| POST | `/api/Histories` | Criar registro de manutenção | `201 Created` |
-| GET | `/api/Histories/{id}` | Detalhar manutenção | `200 OK`, `404 Not Found` |
-| PUT | `/api/Histories/{id}` | Atualizar manutenção | `204 No Content`, `400 Bad Request`, `404 Not Found` |
-| DELETE | `/api/Histories/{id}` | Remover manutenção | `204 No Content`, `404 Not Found` |
+2.  **Usar o Token:**
+    Para acessar os endpoints protegidos, inclua o token retornado no cabeçalho `Authorization` da sua requisição:
+    ```
+    Authorization: Bearer <SEU_TOKEN_JWT>
+    ```
 
 ## ▶️ Como Executar
 
-1. **Clone o repositório:**
-   ```bash
-   git clone https://github.com/seuusuario/seurepo.git
-   ```
+1.  **Restaure as dependências:**
+    ```bash
+    dotnet restore
+    ```
 
-2. **Configuração do Banco de Dados:**
-   - Certifique-se de ter acesso a um banco de dados Oracle.
-   - Atualize a string de conexão no arquivo `src/Api/appsettings.json` com suas credenciais e detalhes do banco de dados:
-     ```json
-     "ConnectionStrings": {
-         "Oracle": "Data Source=<seu_servidor>:<sua_porta>/<seu_servico>;User ID=<seu_usuario>;Password=<sua_senha>;"
-     }
-     ```
-   - Navegue até o diretório `src/Infrastructure` e aplique as migrações para criar o esquema do banco de dados:
-     ```bash
-     dotnet ef database update --project Infrastructure.csproj --startup-project ../Api/Api.csproj
-     ```
+2.  **Execute a aplicação:**
+    ```bash
+    dotnet run --project src/Api/Api.csproj
+    ```
 
-3. **Execute os comandos:**
-   ```bash
-   dotnet restore
-   dotnet build
-   dotnet run --project src/Api/Api.csproj --launch-profile "https"
-   ```
+3.  **Acesse a documentação Swagger:**
+    Acesse `https://localhost:<porta>/swagger` para testar os endpoints.
 
-4. **Acesse a documentação Swagger:**
-   Com a aplicação em execução, acesse `https://localhost:7224/swagger` (ou a porta configurada) no seu navegador para explorar os endpoints da API.
+## 🧪 Execução dos Testes
 
-## 📁 Estrutura do Projeto
+Para executar os testes unitários e de integração, siga os passos abaixo:
 
-```
-. (raiz do projeto)
-├── src
-│   ├── Api             # Camada de Apresentação (Controllers, Program.cs, appsettings.json)
-│   ├── Application     # Camada de Aplicação (DTOs, Services, Interfaces de Serviços)
-│   ├── Domain          # Camada de Domínio (Entidades, Value Objects, Interfaces de Repositório)
-│   └── Infrastructure  # Camada de Infraestrutura (Contexto EF Core, Mapeamentos, Repositórios)
-├── chalenge-moto-connect.sln # Arquivo de solução do Visual Studio
-└── README.md         # Este arquivo
-```
+1.  **Navegue até o diretório raiz do projeto:**
+    ```bash
+    cd challenge-moto-connect
+    ```
+
+2.  **Execute os testes:**
+    ```bash
+    dotnet test
+    ```
+
+## 📁 Arquivos de Apoio para DevOps
+
+- `script_bd.sql`: Script DDL para criação da nova tabela `TelemetryData`.
+- `azure_cli_scripts.md`: Estrutura de comandos Azure CLI para provisionamento de App Service e SQL Server.
 
 ## 👨‍💻 Desenvolvedores
 
 - **Mateus H. Souza** - RM: 558424
 - **Cauan Passos** - RM: 555466
 - **Lucas Fialho** - RM: 557884
-
-## 📄 Licença
-
-Este projeto possui licença para uso educacional como parte de avaliação acadêmica.
-
+(Mantendo os nomes originais)

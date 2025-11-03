@@ -2,6 +2,7 @@ using challenge_moto_connect.Application.DTOs;
 using challenge_moto_connect.Application.DTOs.Pagination;
 using challenge_moto_connect.Domain.Entity;
 using challenge_moto_connect.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using challenge_moto_connect.Domain.ValueObjects;
 
 namespace challenge_moto_connect.Application.Services
@@ -82,6 +83,21 @@ namespace challenge_moto_connect.Application.Services
             }).ToList();
 
             return new PagedListDto<UserDTO>(userDtos, pagedUsers.TotalCount, pagedUsers.CurrentPage, pagedUsers.PageSize);
+        }
+
+        public async Task<UserDTO> GetUserByEmailAsync(string email)
+        {
+            var user = await _userRepository.GetByCondition(u => u.Email.Address == email).FirstOrDefaultAsync();
+
+            if (user == null) return null;
+
+            return new UserDTO
+            {
+                UserID = user.UserID,
+                Email = user.Email.Address,
+                Password = user.Password.Value,
+                Type = (int)user.Type
+            };
         }
     }
 }

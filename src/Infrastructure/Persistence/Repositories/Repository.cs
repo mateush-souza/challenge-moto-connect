@@ -43,6 +43,11 @@ namespace challenge_moto_connect.Infrastructure.Persistence.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public IQueryable<T> GetByCondition(System.Linq.Expressions.Expression<Func<T, bool>> expression)
+        {
+            return _dbSet.Where(expression).AsQueryable();
+        }
+
         public async Task DeleteAsync(Guid id)
         {
             var entity = await GetByIdAsync(id);
