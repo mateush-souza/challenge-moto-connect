@@ -22,6 +22,7 @@ namespace challenge_moto_connect.Application.Services
             return users.Select(u => new UserDTO
             {
                 UserID = u.UserID,
+                Name = u.Name,
                 Email = u.Email.Address,
                 Password = u.Password.Value,
                 Type = (int)u.Type
@@ -36,6 +37,7 @@ namespace challenge_moto_connect.Application.Services
             return new UserDTO
             {
                 UserID = user.UserID,
+                Name = user.Name,
                 Email = user.Email.Address,
                 Password = user.Password.Value,
                 Type = (int)user.Type
@@ -44,7 +46,7 @@ namespace challenge_moto_connect.Application.Services
 
         public async Task<UserDTO> CreateUserAsync(UserDTO userDto)
         {
-            var user = new User(Guid.NewGuid(), new Email(userDto.Email), new Password(userDto.Password), (UserType)userDto.Type);
+            var user = new User(Guid.NewGuid(), userDto.Name, new Email(userDto.Email), new Password(userDto.Password), (UserType)userDto.Type);
             await _userRepository.AddAsync(user);
             return userDto;
         }
@@ -54,6 +56,7 @@ namespace challenge_moto_connect.Application.Services
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) throw new KeyNotFoundException("User not found.");
 
+            user.Name = userDto.Name;
             user.UpdateEmail(new Email(userDto.Email));
             user.UpdatePassword(new Password(userDto.Password));
             user.Type = (UserType)userDto.Type;
@@ -77,6 +80,7 @@ namespace challenge_moto_connect.Application.Services
             var userDtos = pagedUsers.Items.Select(u => new UserDTO
             {
                 UserID = u.UserID,
+                Name = u.Name,
                 Email = u.Email.Address,
                 Password = u.Password.Value,
                 Type = (int)u.Type
@@ -94,6 +98,7 @@ namespace challenge_moto_connect.Application.Services
             return new UserDTO
             {
                 UserID = user.UserID,
+                Name = user.Name,
                 Email = user.Email.Address,
                 Password = user.Password.Value,
                 Type = (int)user.Type

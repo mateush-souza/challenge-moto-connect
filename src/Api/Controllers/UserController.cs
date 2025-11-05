@@ -94,6 +94,7 @@ namespace challenge_moto_connect.Api.Controllers
         }
 
         [HttpPost(Name = nameof(PostUser))]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(UserDTO), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<UserDTO>> PostUser(UserDTO userDto)
