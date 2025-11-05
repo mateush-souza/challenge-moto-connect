@@ -9,32 +9,20 @@ using System.Text.Json;
 
 namespace challenge_moto_connect.Api.Controllers
 {
-    /// <summary>
-    /// Controller para gerenciamento de motocicletas
-    /// </summary>
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
     [Authorize]
     [Produces(MediaTypeNames.Application.Json)]
     public class VehiclesController : ControllerBase
     {
         private readonly IVehicleService _vehicleService;
 
-        /// <summary>
-        /// Construtor do controller de veículos
-        /// </summary>
-        /// <param name="vehicleService">Serviço de veículos</param>
         public VehiclesController(IVehicleService vehicleService)
         {
             _vehicleService = vehicleService;
         }
 
-        /// <summary>
-        /// Lista todas as motocicletas com paginação
-        /// </summary>
-        /// <param name="paginationParams">Parâmetros de paginação</param>
-        /// <returns>Lista paginada de motocicletas</returns>
-        /// <response code="200">Retorna a lista de motocicletas com sucesso</response>
         [HttpGet(Name = nameof(GetVehicles))]
         [ProducesResponseType(typeof(IEnumerable<VehicleDTO>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<VehicleDTO>>> GetVehicles([FromQuery] PaginationParams paginationParams)
@@ -51,7 +39,7 @@ namespace challenge_moto_connect.Api.Controllers
                 pagedVehicles.HasPrevious
             };
 
-            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(metadata));
 
             foreach (var vehicle in pagedVehicles.Items)
             {
@@ -63,13 +51,6 @@ namespace challenge_moto_connect.Api.Controllers
             return Ok(pagedVehicles.Items);
         }
 
-        /// <summary>
-        /// Busca uma motocicleta por ID
-        /// </summary>
-        /// <param name="id">ID da motocicleta</param>
-        /// <returns>Dados da motocicleta</returns>
-        /// <response code="200">Motocicleta encontrada com sucesso</response>
-        /// <response code="404">Motocicleta não encontrada</response>
         [HttpGet("{id:guid}", Name = nameof(GetVehicle))]
         [ProducesResponseType(typeof(VehicleDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -89,21 +70,10 @@ namespace challenge_moto_connect.Api.Controllers
             return Ok(vehicle);
         }
 
-        /// <summary>
-        /// Atualiza uma motocicleta existente
-        /// </summary>
-        /// <param name="id">ID da motocicleta</param>
-        /// <param name="vehicleDto">Dados da motocicleta para atualização</param>
-        /// <returns>Resultado da operação</returns>
-        /// <response code="204">Motocicleta atualizada com sucesso</response>
-        /// <response code="400">Dados inválidos fornecidos</response>
-        /// <response code="404">Motocicleta não encontrada</response>
-        /// <response code="500">Erro interno do servidor</response>
         [HttpPut("{id:guid}", Name = nameof(PutVehicle))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> PutVehicle(Guid id, [FromBody] VehicleDTO vehicleDto)
         {
             if (id != vehicleDto.VehicleId)
@@ -121,29 +91,12 @@ namespace challenge_moto_connect.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                return NotFound($"Veículo com ID {id} não encontrado.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao atualizar veículo: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
-                }
-
-                return StatusCode(500, new { error = "Erro interno", message = ex.Message, innerException = ex.InnerException?.Message });
+                return NotFound(new { error = $"Veículo com ID {id} não encontrado." });
             }
 
             return NoContent();
         }
 
-        /// <summary>
-        /// Cria uma nova motocicleta
-        /// </summary>
-        /// <param name="vehicleDto">Dados da nova motocicleta</param>
-        /// <returns>Motocicleta criada</returns>
-        /// <response code="201">Motocicleta criada com sucesso</response>
-        /// <response code="400">Dados inválidos fornecidos</response>
         [HttpPost(Name = nameof(PostVehicle))]
         [ProducesResponseType(typeof(VehicleDTO), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -165,13 +118,6 @@ namespace challenge_moto_connect.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Remove uma motocicleta
-        /// </summary>
-        /// <param name="id">ID da motocicleta</param>
-        /// <returns>Resultado da operação</returns>
-        /// <response code="204">Motocicleta removida com sucesso</response>
-        /// <response code="404">Motocicleta não encontrada</response>
         [HttpDelete("{id:guid}", Name = nameof(DeleteVehicle))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

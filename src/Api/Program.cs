@@ -24,38 +24,36 @@ namespace challenge_moto_connect
 
             builder.Services.AddControllers().AddNewtonsoftJson();
 
-// Configuração de Versionamento da API
-builder.Services.AddApiVersioning(config =>
-{
-    config.DefaultApiVersion = new ApiVersion(1, 0);
-    config.AssumeDefaultVersionWhenUnspecified = true;
-    config.ReportApiVersions = true;
-    config.ApiVersionReader = new UrlSegmentApiVersionReader();
-});
+            builder.Services.AddApiVersioning(config =>
+            {
+                config.DefaultApiVersion = new ApiVersion(1, 0);
+                config.AssumeDefaultVersionWhenUnspecified = true;
+                config.ReportApiVersions = true;
+                config.ApiVersionReader = new UrlSegmentApiVersionReader();
+            });
 
-// Configuração de Health Checks
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<ChallengeMotoConnectContext>();
+            builder.Services.AddHealthChecks()
+                .AddDbContextCheck<ChallengeMotoConnectContext>();
+
             builder.Services.AddEndpointsApiExplorer();
 
-// Configuração de Autenticação JWT
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    };
-});
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                };
+            });
             builder.Services.AddSwaggerGen(x =>
             {
                 x.SwaggerDoc(
@@ -71,64 +69,50 @@ builder.Services.AddAuthentication(options =>
                         },
                     }
                 );
-
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-
-                x.IncludeXmlComments(xmlPath);
             });
 
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IHistoryService, HistoryService>();
             builder.Services.AddScoped<IVehicleService, VehicleService>();
-            builder.Services.AddSingleton<MLService>();
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddHttpContextAccessor();
 
             var app = builder.Build();
 
-            // Enable Swagger UI in all environments (useful for App Service)
             app.UseSwagger();
             app.UseSwaggerUI();
-
-            // Only redirect to HTTPS during Development to avoid issues on Linux App Service
             app.UseHttpsRedirection();
-
             app.UseAuthentication();
-app.UseAuthorization();
+            app.UseAuthorization();
 
-// Adiciona o endpoint de Health Checks
-app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-{
-    ResponseWriter = async (context, report) =>
-    {
-        context.Response.ContentType = "application/json";
-        var response = new
-        {
-            status = report.Status.ToString(),
-            checks = report.Entries.Select(e => new
+            app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
             {
-                component = e.Key,
-                status = e.Value.Status.ToString(),
-                description = e.Value.Description
-            })
-        };
-        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
-    }
-});
+                ResponseWriter = async (context, report) =>
+                {
+                    context.Response.ContentType = "application/json";
+                    var response = new
+                    {
+                        status = report.Status.ToString(),
+                        checks = report.Entries.Select(e => new
+                        {
+                            component = e.Key,
+                            status = e.Value.Status.ToString(),
+                            description = e.Value.Description
+                        })
+                    };
+                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+                }
+            });
 
             app.MapControllers();
 
-// Endpoint para simulação de recebimento de dados IoT/Visão Computacional
-app.MapPost("/api/telemetry", async (TelemetryData data, ChallengeMotoConnectContext context) =>
-{
-    // Apenas persistindo os dados para simular o recebimento.
-    // A lógica de processamento seria implementada aqui.
-    context.TelemetryData.Add(data);
-    await context.SaveChangesAsync();
-    return Results.Created($"/api/telemetry/{data.Id}", data);
-});
+            app.MapPost("/api/telemetry", async (TelemetryData data, ChallengeMotoConnectContext context) =>
+            {
+                context.TelemetryData.Add(data);
+                await context.SaveChangesAsync();
+                return Results.Created($"/api/telemetry/{data.Id}", data);
+            });
 
             app.MapGet(
                 "/",

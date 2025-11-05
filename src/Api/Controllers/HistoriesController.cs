@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Mime;
@@ -10,32 +9,20 @@ using System.Text.Json;
 
 namespace challenge_moto_connect.Api.Controllers
 {
-    /// <summary>
-    /// Controller para gerenciamento de históricos de manutenção
-    /// </summary>
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
     [Authorize]
     [Produces(MediaTypeNames.Application.Json)]
     public class HistoriesController : ControllerBase
     {
         private readonly IHistoryService _historyService;
 
-        /// <summary>
-        /// Construtor do controller de históricos
-        /// </summary>
-        /// <param name="historyService">Serviço de históricos</param>
         public HistoriesController(IHistoryService historyService)
         {
             _historyService = historyService;
         }
 
-        /// <summary>
-        /// Lista todos os históricos de manutenção com paginação
-        /// </summary>
-        /// <param name="paginationParams">Parâmetros de paginação</param>
-        /// <returns>Lista paginada de históricos de manutenção</returns>
-        /// <response code="200">Retorna a lista de históricos com sucesso</response>
         [HttpGet(Name = nameof(GetMaintenanceHistories))]
         [ProducesResponseType(typeof(IEnumerable<HistoryDTO>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<HistoryDTO>>> GetMaintenanceHistories([FromQuery] PaginationParams paginationParams)
@@ -52,7 +39,7 @@ namespace challenge_moto_connect.Api.Controllers
                 pagedHistories.HasPrevious
             };
 
-            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(metadata));
 
             foreach (var history in pagedHistories.Items)
             {
@@ -64,13 +51,6 @@ namespace challenge_moto_connect.Api.Controllers
             return Ok(pagedHistories.Items);
         }
 
-        /// <summary>
-        /// Busca um histórico de manutenção por ID
-        /// </summary>
-        /// <param name="id">ID do histórico de manutenção</param>
-        /// <returns>Dados do histórico de manutenção</returns>
-        /// <response code="200">Histórico encontrado com sucesso</response>
-        /// <response code="404">Histórico não encontrado</response>
         [HttpGet("{id:guid}", Name = nameof(GetMaintenanceHistory))]
         [ProducesResponseType(typeof(HistoryDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -89,15 +69,6 @@ namespace challenge_moto_connect.Api.Controllers
             return Ok(history);
         }
 
-        /// <summary>
-        /// Atualiza um histórico de manutenção existente
-        /// </summary>
-        /// <param name="id">ID do histórico de manutenção</param>
-        /// <param name="historyDto">Dados do histórico para atualização</param>
-        /// <returns>Resultado da operação</returns>
-        /// <response code="204">Histórico atualizado com sucesso</response>
-        /// <response code="400">Dados inválidos fornecidos</response>
-        /// <response code="404">Histórico não encontrado</response>
         [HttpPut("{id:guid}", Name = nameof(PutMaintenanceHistory))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -121,13 +92,6 @@ namespace challenge_moto_connect.Api.Controllers
             return NoContent();
         }
 
-        /// <summary>
-        /// Cria um novo histórico de manutenção
-        /// </summary>
-        /// <param name="historyDto">Dados do novo histórico de manutenção</param>
-        /// <returns>Histórico de manutenção criado</returns>
-        /// <response code="201">Histórico criado com sucesso</response>
-        /// <response code="400">Dados inválidos fornecidos</response>
         [HttpPost(Name = nameof(PostMaintenanceHistory))]
         [ProducesResponseType(typeof(HistoryDTO), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -142,13 +106,6 @@ namespace challenge_moto_connect.Api.Controllers
             return CreatedAtAction(nameof(GetMaintenanceHistory), new { id = createdHistory.MaintenanceHistoryID }, createdHistory);
         }
 
-        /// <summary>
-        /// Remove um histórico de manutenção
-        /// </summary>
-        /// <param name="id">ID do histórico de manutenção</param>
-        /// <returns>Resultado da operação</returns>
-        /// <response code="204">Histórico removido com sucesso</response>
-        /// <response code="404">Histórico não encontrado</response>
         [HttpDelete("{id:guid}", Name = nameof(DeleteMaintenanceHistory))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
