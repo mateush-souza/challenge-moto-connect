@@ -13,6 +13,7 @@ using challenge_moto_connect.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using System.IO;
 
 namespace challenge_moto_connect
 {
@@ -61,6 +62,7 @@ namespace challenge_moto_connect
                     new OpenApiInfo
                     {
                         Title = builder.Configuration["Swagger:Title"],
+                        Version = "v1",
                         Description = builder.Configuration["Swagger:Description"],
                         Contact = new OpenApiContact()
                         {
@@ -69,6 +71,38 @@ namespace challenge_moto_connect
                         },
                     }
                 );
+
+                x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Insira o token JWT no formato: Bearer {seu token}"
+                });
+
+                x.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                if (File.Exists(xmlPath))
+                {
+                    x.IncludeXmlComments(xmlPath);
+                }
             });
 
             builder.Services.AddInfrastructure(builder.Configuration);

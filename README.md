@@ -81,17 +81,62 @@ O Moto Connect é uma solução para gerenciamento de motocicletas. Esta versão
 
 ## 🧪 Execução dos Testes
 
-Para executar os testes unitários e de integração, siga os passos abaixo:
+O projeto possui testes unitários e de integração implementados com xUnit, cobrindo a lógica principal da aplicação.
+
+### **Testes Implementados**
+
+1. **Testes Unitários:**
+   - `UserServiceTests.cs`: Testa a lógica de negócio do UserService
+   - `MLControllerTests.cs`: Testa o endpoint de Machine Learning
+
+2. **Testes de Integração:**
+   - `IntegrationTests.cs`: Testa endpoints básicos da API
+   - `HealthCheckIntegrationTests.cs`: Testa o endpoint de Health Check
+
+### **Como Executar os Testes**
 
 1.  **Navegue até o diretório raiz do projeto:**
     ```bash
     cd challenge-moto-connect
     ```
 
-2.  **Execute os testes:**
+2.  **Execute todos os testes:**
     ```bash
     dotnet test
     ```
+
+3.  **Execute os testes com output detalhado:**
+    ```bash
+    dotnet test --logger "console;verbosity=detailed"
+    ```
+
+4.  **Execute os testes de um projeto específico:**
+    ```bash
+    dotnet test tests/challenge-moto-connect.Tests/challenge-moto-connect.Tests.csproj
+    ```
+
+5.  **Execute os testes com cobertura de código:**
+    ```bash
+    dotnet test --collect:"XPlat Code Coverage"
+    ```
+
+### **Estrutura dos Testes**
+
+```
+tests/
+└── challenge-moto-connect.Tests/
+    ├── UserServiceTests.cs              (Testes unitários)
+    ├── MLControllerTests.cs             (Testes unitários)
+    ├── IntegrationTests.cs              (Testes de integração)
+    ├── HealthCheckIntegrationTests.cs   (Testes de integração)
+    └── GlobalUsings.cs
+```
+
+### **Observações**
+
+- Os testes de integração utilizam `WebApplicationFactory` para criar um servidor de testes
+- Os testes unitários utilizam `Moq` para criar mocks de dependências
+- Todos os testes são executados em memória e não afetam o banco de dados de produção
 
 ## 📁 Arquivos de Apoio para DevOps
 
