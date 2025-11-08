@@ -8,6 +8,7 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <NoWarn>$(NoWarn);CS8620;NETSDK1206</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
