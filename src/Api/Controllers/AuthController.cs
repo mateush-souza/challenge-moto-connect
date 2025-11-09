@@ -34,9 +34,9 @@ namespace challenge_moto_connect.Api.Controllers
                 return Unauthorized(new { message = "Credenciais inválidas." });
             }
 
-            var user = await _userService.GetUserByEmailAsync(loginDto.Email);
+            var user = await _userService.AuthenticateAsync(loginDto.Email, loginDto.Password);
 
-            if (user == null || user.Password != loginDto.Password)
+            if (user == null)
             {
                 return Unauthorized(new { message = "Credenciais inválidas." });
             }
@@ -46,9 +46,52 @@ namespace challenge_moto_connect.Api.Controllers
             return Ok(new { token });
         }
 
+        [HttpPost("register")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Register([FromBody] UserDTO registerDto)
+        {
+            if (string.IsNullOrWhiteSpace(registerDto.Email) || string.IsNullOrWhiteSpace(registerDto.Password))
+            {
+                return BadRequest(new { message = "Email e senha são obrigatórios." });
+            }
+
+            if (string.IsNullOrWhiteSpace(registerDto.Name))
+            {
+                return BadRequest(new { message = "Nome é obrigatório." });
+            }
+
+            var existingUser = await _userService.GetUserByEmailAsync(registerDto.Email);
+            if (existingUser != null)
+            {
+                return BadRequest(new { message = "Email já cadastrado." });
+            }
+
+            if (registerDto.Type == 0)
+            {
+                registerDto.Type = 1;
+            }
+
+            try
+            {
+                var createdUser = await _userService.CreateUserAsync(registerDto);
+                var token = GenerateJwtToken(createdUser);
+
+                return CreatedAtAction(nameof(Login), new { email = createdUser.Email }, new { token, user = createdUser });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         private string GenerateJwtToken(UserDTO user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var jwtKey = _configuration["Jwt:Key"] ?? "EstaEChaveSecretaParaJWTChallengeMotoConnect";
+            var jwtIssuer = _configuration["Jwt:Issuer"] ?? "MotoConnectIssuer";
+            var jwtAudience = _configuration["Jwt:Audience"] ?? "MotoConnectAudience";
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -61,8 +104,8 @@ namespace challenge_moto_connect.Api.Controllers
             };
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: jwtIssuer,
+                audience: jwtAudience,
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(120),
                 signingCredentials: credentials);

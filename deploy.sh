@@ -14,14 +14,8 @@ DB_SERVER_NAME="sql-motoconnect-557884"
 DB_NAME="motoconnectdb"
 APP_SERVICE_PLAN="asp-motoconnect-fiap-557884"
 WEB_APP_NAME="webapp-motoconnect-557884"
-DB_ADMIN_USER="${DB_ADMIN_USER:-}"
-DB_ADMIN_PASSWORD="${DB_ADMIN_PASSWORD:-}"
-
-if [ -z "$DB_ADMIN_USER" ] || [ -z "$DB_ADMIN_PASSWORD" ]; then
-    echo -e "${YELLOW}Erro: DB_ADMIN_USER e DB_ADMIN_PASSWORD devem ser definidos como variáveis de ambiente${NC}"
-    echo "Exemplo: export DB_ADMIN_USER='seu_usuario' && export DB_ADMIN_PASSWORD='sua_senha'"
-    exit 1
-fi
+DB_ADMIN_USER="motosqladmin"
+DB_ADMIN_PASSWORD="FiapDevOps@2025"
 
 echo -e "${GREEN}✓ Variáveis configuradas${NC}\n"
 
@@ -146,6 +140,12 @@ az webapp config appsettings set \
         ASPNETCORE_ENVIRONMENT="Production" \
         WEBSITE_RUN_FROM_PACKAGE="0" \
         SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
+        "Jwt__Key=EstaEChaveSecretaParaJWTChallengeMotoConnect" \
+        "Jwt__Issuer=MotoConnectIssuer" \
+        "Jwt__Audience=MotoConnectAudience" \
+        "Swagger__Title=Moto Connect - Challenge" \
+        "Swagger__Description=API para gerenciamento de motocicletas" \
+        "Swagger__Email=rm558424@fiap.com.br" \
     --output none
 echo -e "${GREEN}✓ App Settings configurado${NC}\n"
 
@@ -225,16 +225,55 @@ dotnet tool install --global dotnet-ef 2>/dev/null || dotnet tool update --globa
 echo "Aplicando migrations no banco de dados Azure..."
 CONNECTION_STRING_MIGRATION="Server=tcp:${DB_SERVER_NAME}.database.windows.net,1433;Initial Catalog=${DB_NAME};Persist Security Info=False;User ID=${DB_ADMIN_USER};Password=${DB_ADMIN_PASSWORD};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 
-cd "$PROJECT_FILE" && cd ..
-dotnet ef database update --connection "$CONNECTION_STRING_MIGRATION" --project "$PROJECT_FILE"
-
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Migrations aplicadas com sucesso${NC}\n"
+if [ -n "$PROJECT_FILE" ]; then
+    CURRENT_DIR=$(pwd)
+    PROJECT_DIR=$(dirname "$PROJECT_FILE")
+    
+    if [ ! -f "$PROJECT_FILE" ]; then
+        echo -e "${YELLOW}⚠ Arquivo do projeto não encontrado: $PROJECT_FILE${NC}"
+        echo -e "${YELLOW}⚠ A aplicação tentará aplicar migrations automaticamente no startup...${NC}\n"
+    else
+        ABSOLUTE_PROJECT_FILE=$(cd "$PROJECT_DIR" && pwd)/$(basename "$PROJECT_FILE")
+        
+        cd "$PROJECT_DIR"
+        
+        PROJECT_ROOT=$(pwd)
+        while [ ! -f "$PROJECT_ROOT/challenge-moto-connect.sln" ] && [ "$PROJECT_ROOT" != "/" ]; do
+            PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
+        done
+        
+        if [ -f "$PROJECT_ROOT/challenge-moto-connect.sln" ]; then
+            cd "$PROJECT_ROOT"
+            INFRASTRUCTURE_PROJECT=$(find . -path "*/Infrastructure/*.csproj" | head -n 1)
+            
+            if [ -n "$INFRASTRUCTURE_PROJECT" ] && [ -f "$INFRASTRUCTURE_PROJECT" ]; then
+                API_PROJECT_RELATIVE=$(realpath --relative-to="$PROJECT_ROOT" "$ABSOLUTE_PROJECT_FILE" 2>/dev/null || echo "src/Api/Api.csproj")
+                
+                echo "Projeto Infrastructure: $INFRASTRUCTURE_PROJECT"
+                echo "Projeto API: $API_PROJECT_RELATIVE"
+                echo "Diretório atual: $(pwd)"
+                
+                dotnet ef database update --connection "$CONNECTION_STRING_MIGRATION" --project "$INFRASTRUCTURE_PROJECT" --startup-project "$API_PROJECT_RELATIVE"
+                
+                if [ $? -eq 0 ]; then
+                    echo -e "${GREEN}✓ Migrations aplicadas com sucesso${NC}\n"
+                else
+                    echo -e "${YELLOW}⚠ Erro ao aplicar migrations. A aplicação tentará aplicar automaticamente no startup...${NC}\n"
+                fi
+            else
+                echo -e "${YELLOW}⚠ Projeto Infrastructure não encontrado em $PROJECT_ROOT${NC}"
+                echo -e "${YELLOW}⚠ A aplicação tentará aplicar migrations automaticamente no startup...${NC}\n"
+            fi
+            cd "$CURRENT_DIR"
+        else
+            echo -e "${YELLOW}⚠ Solução challenge-moto-connect.sln não encontrada${NC}"
+            echo -e "${YELLOW}⚠ A aplicação tentará aplicar migrations automaticamente no startup...${NC}\n"
+            cd "$CURRENT_DIR"
+        fi
+    fi
 else
-    echo -e "${YELLOW}⚠ Erro ao aplicar migrations. Continuando...${NC}\n"
+    echo -e "${YELLOW}⚠ Projeto não encontrado. A aplicação tentará aplicar migrations automaticamente no startup...${NC}\n"
 fi
-
-cd - > /dev/null
 rm -rf ./publish
 
 echo -e "${GREEN}✓ Banco de dados configurado${NC}\n"

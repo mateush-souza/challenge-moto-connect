@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 
-namespace challenge_moto_connect.Controllers
+namespace challenge_moto_connect.Api.Controllers
 {
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]

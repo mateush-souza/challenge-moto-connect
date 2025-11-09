@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System.IO;
+using System.Threading;
 
 namespace challenge_moto_connect
 {
@@ -38,6 +39,10 @@ namespace challenge_moto_connect
 
             builder.Services.AddEndpointsApiExplorer();
 
+            var jwtKey = builder.Configuration["Jwt:Key"] ?? "EstaEChaveSecretaParaJWTChallengeMotoConnect";
+            var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "MotoConnectIssuer";
+            var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "MotoConnectAudience";
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -50,9 +55,9 @@ namespace challenge_moto_connect
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
                 };
             });
             builder.Services.AddSwaggerGen(x =>
@@ -61,13 +66,13 @@ namespace challenge_moto_connect
                     "v1",
                     new OpenApiInfo
                     {
-                        Title = builder.Configuration["Swagger:Title"],
+                        Title = builder.Configuration["Swagger:Title"] ?? "Moto Connect - Challenge",
                         Version = "v1",
-                        Description = builder.Configuration["Swagger:Description"],
+                        Description = builder.Configuration["Swagger:Description"] ?? "API para gerenciamento de motocicletas",
                         Contact = new OpenApiContact()
                         {
                             Name = "Moto Connect",
-                            Email = "rm558424@fiap.com.br",
+                            Email = builder.Configuration["Swagger:Email"] ?? "rm558424@fiap.com.br",
                         },
                     }
                 );
@@ -114,25 +119,82 @@ namespace challenge_moto_connect
 
             var app = builder.Build();
 
-            // Aplicar migrations automaticamente no startup
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/error");
+            }
+
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 try
                 {
                     var context = services.GetRequiredService<ChallengeMotoConnectContext>();
-                    context.Database.Migrate();
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    
+                    logger.LogInformation("Verificando conexão com banco de dados...");
+                    
+                    var maxRetries = 5;
+                    var retryCount = 0;
+                    var connected = false;
+                    
+                    while (retryCount < maxRetries && !connected)
+                    {
+                        try
+                        {
+                            connected = context.Database.CanConnect();
+                            if (connected)
+                            {
+                                logger.LogInformation("Banco de dados conectado com sucesso.");
+                                break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            retryCount++;
+                            logger.LogWarning("Tentativa {RetryCount}/{MaxRetries} de conexão falhou: {Message}", retryCount, maxRetries, ex.Message);
+                            if (retryCount < maxRetries)
+                            {
+                                Thread.Sleep(TimeSpan.FromSeconds(5));
+                            }
+                        }
+                    }
+                    
+                    if (connected)
+                    {
+                        logger.LogInformation("Aplicando migrations...");
+                        context.Database.Migrate();
+                        logger.LogInformation("Migrations aplicadas com sucesso.");
+                    }
+                    else
+                    {
+                        logger.LogError("Não foi possível conectar ao banco de dados após {MaxRetries} tentativas. A aplicação continuará, mas migrations não foram aplicadas.", maxRetries);
+                    }
                 }
                 catch (Exception ex)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "Erro ao aplicar migrations durante startup");
+                    logger.LogError(ex, "Erro ao aplicar migrations durante startup: {Message}. StackTrace: {StackTrace}", ex.Message, ex.StackTrace);
                 }
             }
 
             app.UseSwagger();
-            app.UseSwaggerUI();
-            app.UseHttpsRedirection();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Moto Connect API v1");
+                c.RoutePrefix = "swagger";
+                c.DisplayRequestDuration();
+            });
+            
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
+            
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -172,6 +234,8 @@ namespace challenge_moto_connect
                     return Task.CompletedTask;
                 }
             );
+
+            app.MapGet("/error", () => Results.Problem("Ocorreu um erro interno no servidor."));
 
             app.Run();
         }
