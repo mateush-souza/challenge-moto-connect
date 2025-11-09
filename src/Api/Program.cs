@@ -77,9 +77,9 @@ namespace challenge_moto_connect
             builder.Services.AddSwaggerGen(x =>
             {
                 x.SwaggerDoc("v1", new OpenApiInfo
-                {
+                    {
                     Title = builder.Configuration["Swagger:Title"] ?? "Moto Connect - Challenge",
-                    Version = "v1",
+                        Version = "v1",
                     Description = builder.Configuration["Swagger:Description"] ?? "API para gerenciamento de motocicletas",
                     Contact = new OpenApiContact()
                     {
@@ -93,11 +93,11 @@ namespace challenge_moto_connect
                     Title = builder.Configuration["Swagger:Title"] ?? "Moto Connect - Challenge",
                     Version = "v2",
                     Description = "API v2 com melhorias e novos recursos",
-                    Contact = new OpenApiContact()
-                    {
-                        Name = "Moto Connect",
+                        Contact = new OpenApiContact()
+                        {
+                            Name = "Moto Connect",
                         Email = builder.Configuration["Swagger:Email"] ?? "rm558424@fiap.com.br",
-                    },
+                        },
                 });
 
                 x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -191,7 +191,7 @@ namespace challenge_moto_connect
                     if (connected)
                     {
                         logger.LogInformation("Aplicando migrations...");
-                        context.Database.Migrate();
+                    context.Database.Migrate();
                         logger.LogInformation("Migrations aplicadas com sucesso.");
                     }
                     else
@@ -217,7 +217,7 @@ namespace challenge_moto_connect
             
             if (!app.Environment.IsDevelopment())
             {
-                app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             }
             
             app.UseAuthentication();

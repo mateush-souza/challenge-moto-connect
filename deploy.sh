@@ -254,16 +254,16 @@ if [ -n "$PROJECT_FILE" ]; then
                 echo "Diretório atual: $(pwd)"
                 
                 dotnet ef database update --connection "$CONNECTION_STRING_MIGRATION" --project "$INFRASTRUCTURE_PROJECT" --startup-project "$API_PROJECT_RELATIVE"
-                
-                if [ $? -eq 0 ]; then
-                    echo -e "${GREEN}✓ Migrations aplicadas com sucesso${NC}\n"
-                else
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✓ Migrations aplicadas com sucesso${NC}\n"
+else
                     echo -e "${YELLOW}⚠ Erro ao aplicar migrations. A aplicação tentará aplicar automaticamente no startup...${NC}\n"
                 fi
             else
                 echo -e "${YELLOW}⚠ Projeto Infrastructure não encontrado em $PROJECT_ROOT${NC}"
                 echo -e "${YELLOW}⚠ A aplicação tentará aplicar migrations automaticamente no startup...${NC}\n"
-            fi
+fi
             cd "$CURRENT_DIR"
         else
             echo -e "${YELLOW}⚠ Solução challenge-moto-connect.sln não encontrada${NC}"

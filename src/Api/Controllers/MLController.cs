@@ -38,7 +38,7 @@ namespace challenge_moto_connect.Api.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
-            }
+        }
         }
 
         [HttpPost("detect-anomaly")]
