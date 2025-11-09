@@ -140,7 +140,7 @@ az webapp config appsettings set \
         ASPNETCORE_ENVIRONMENT="Production" \
         WEBSITE_RUN_FROM_PACKAGE="0" \
         SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
-        "Jwt__Key=EstaEChaveSecretaParaJWTChallengeMotoConnect" \
+        "Jwt__Key=EstaEChaveSecretaParaJWTChallengeMotoConnectComMinimoTrintaEDoisCaracteres2024" \
         "Jwt__Issuer=MotoConnectIssuer" \
         "Jwt__Audience=MotoConnectAudience" \
         "Swagger__Title=Moto Connect - Challenge" \

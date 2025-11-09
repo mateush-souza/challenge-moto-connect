@@ -27,7 +27,7 @@ namespace challenge_moto_connect.Tests
                 userId,
                 "Test User",
                 new Email("test@example.com"),
-                new Password("password123"),
+                Password.FromHash("100000:c2FsdA==:aGFzaGVkUGFzc3dvcmQxMjM="),
                 UserType.ADMIN
             );
 
@@ -61,7 +61,7 @@ namespace challenge_moto_connect.Tests
                 UserID = Guid.NewGuid(),
                 Name = "New User",
                 Email = "newuser@example.com",
-                Password = "password123",
+                Password = "Senha123!@#",
                 Type = (int)UserType.MECHANIC
             };
 
@@ -84,7 +84,7 @@ namespace challenge_moto_connect.Tests
                 userId,
                 "Test User",
                 new Email("test@example.com"),
-                new Password("password123"),
+                Password.FromHash("100000:c2FsdA==:aGFzaGVkUGFzc3dvcmQxMjM="),
                 UserType.ADMIN
             );
 
@@ -106,12 +106,13 @@ namespace challenge_moto_connect.Tests
                 Guid.NewGuid(),
                 "Test User",
                 new Email(email),
-                new Password("password123"),
+                Password.FromHash("100000:c2FsdA==:aGFzaGVkUGFzc3dvcmQxMjM="),
                 UserType.ADMIN
             );
 
-            _mockRepository.Setup(repo => repo.GetAllAsync())
-                .ReturnsAsync(new List<User> { user });
+            var users = new List<User> { user }.AsQueryable();
+            _mockRepository.Setup(repo => repo.GetByCondition(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .Returns(users);
 
             var result = await _userService.GetUserByEmailAsync(email);
 
@@ -122,8 +123,9 @@ namespace challenge_moto_connect.Tests
         [Fact]
         public async Task GetUserByEmailAsync_WithInvalidEmail_ReturnsNull()
         {
-            _mockRepository.Setup(repo => repo.GetAllAsync())
-                .ReturnsAsync(new List<User>());
+            var users = new List<User>().AsQueryable();
+            _mockRepository.Setup(repo => repo.GetByCondition(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+                .Returns(users);
 
             var result = await _userService.GetUserByEmailAsync("nonexistent@example.com");
 
@@ -131,4 +133,3 @@ namespace challenge_moto_connect.Tests
         }
     }
 }
-

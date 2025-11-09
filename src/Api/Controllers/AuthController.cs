@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Net.Mime;
 using challenge_moto_connect.Application.DTOs;
 using challenge_moto_connect.Application.Services;
@@ -25,6 +26,7 @@ namespace challenge_moto_connect.Api.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
@@ -47,6 +49,7 @@ namespace challenge_moto_connect.Api.Controllers
         }
 
         [HttpPost("register")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] UserDTO registerDto)
@@ -87,7 +90,7 @@ namespace challenge_moto_connect.Api.Controllers
 
         private string GenerateJwtToken(UserDTO user)
         {
-            var jwtKey = _configuration["Jwt:Key"] ?? "EstaEChaveSecretaParaJWTChallengeMotoConnect";
+            var jwtKey = _configuration["Jwt:Key"] ?? "EstaEChaveSecretaParaJWTChallengeMotoConnectComMinimoTrintaEDoisCaracteres2024";
             var jwtIssuer = _configuration["Jwt:Issuer"] ?? "MotoConnectIssuer";
             var jwtAudience = _configuration["Jwt:Audience"] ?? "MotoConnectAudience";
 

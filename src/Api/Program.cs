@@ -15,6 +15,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System.IO;
 using System.Threading;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using challenge_moto_connect.Api.HealthChecks;
 
 namespace challenge_moto_connect
 {
@@ -34,12 +38,22 @@ namespace challenge_moto_connect
                 config.ApiVersionReader = new UrlSegmentApiVersionReader();
             });
 
+            builder.Services.AddVersionedApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
+            });
+
             builder.Services.AddHealthChecks()
-                .AddDbContextCheck<ChallengeMotoConnectContext>();
+                .AddDbContextCheck<ChallengeMotoConnectContext>(name: "database", tags: new[] { "ready" })
+                .AddCheck<MemoryHealthCheck>("memory", tags: new[] { "ready" })
+                .AddCheck<CpuHealthCheck>("cpu", tags: new[] { "ready" })
+                .AddDiskStorageHealthCheck(options => options.AddDrive("/", 1024), name: "disk", tags: new[] { "ready" })
+                .AddProcessAllocatedMemoryHealthCheck(512, name: "process_memory", tags: new[] { "live" });
 
             builder.Services.AddEndpointsApiExplorer();
 
-            var jwtKey = builder.Configuration["Jwt:Key"] ?? "EstaEChaveSecretaParaJWTChallengeMotoConnect";
+            var jwtKey = builder.Configuration["Jwt:Key"] ?? "EstaEChaveSecretaParaJWTChallengeMotoConnectComMinimoTrintaEDoisCaracteres2024";
             var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "MotoConnectIssuer";
             var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "MotoConnectAudience";
 
@@ -62,20 +76,29 @@ namespace challenge_moto_connect
             });
             builder.Services.AddSwaggerGen(x =>
             {
-                x.SwaggerDoc(
-                    "v1",
-                    new OpenApiInfo
+                x.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = builder.Configuration["Swagger:Title"] ?? "Moto Connect - Challenge",
+                    Version = "v1",
+                    Description = builder.Configuration["Swagger:Description"] ?? "API para gerenciamento de motocicletas",
+                    Contact = new OpenApiContact()
                     {
-                        Title = builder.Configuration["Swagger:Title"] ?? "Moto Connect - Challenge",
-                        Version = "v1",
-                        Description = builder.Configuration["Swagger:Description"] ?? "API para gerenciamento de motocicletas",
-                        Contact = new OpenApiContact()
-                        {
-                            Name = "Moto Connect",
-                            Email = builder.Configuration["Swagger:Email"] ?? "rm558424@fiap.com.br",
-                        },
-                    }
-                );
+                        Name = "Moto Connect",
+                        Email = builder.Configuration["Swagger:Email"] ?? "rm558424@fiap.com.br",
+                    },
+                });
+
+                x.SwaggerDoc("v2", new OpenApiInfo
+                {
+                    Title = builder.Configuration["Swagger:Title"] ?? "Moto Connect - Challenge",
+                    Version = "v2",
+                    Description = "API v2 com melhorias e novos recursos",
+                    Contact = new OpenApiContact()
+                    {
+                        Name = "Moto Connect",
+                        Email = builder.Configuration["Swagger:Email"] ?? "rm558424@fiap.com.br",
+                    },
+                });
 
                 x.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -114,6 +137,7 @@ namespace challenge_moto_connect
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IHistoryService, HistoryService>();
             builder.Services.AddScoped<IVehicleService, VehicleService>();
+            builder.Services.AddSingleton<IMLService, MLService>();
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddHttpContextAccessor();
 
@@ -186,6 +210,7 @@ namespace challenge_moto_connect
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Moto Connect API v1");
+                c.SwaggerEndpoint("/swagger/v2/swagger.json", "Moto Connect API v2");
                 c.RoutePrefix = "swagger";
                 c.DisplayRequestDuration();
             });
@@ -198,23 +223,21 @@ namespace challenge_moto_connect
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+            app.MapHealthChecks("/health", new HealthCheckOptions
             {
-                ResponseWriter = async (context, report) =>
-                {
-                    context.Response.ContentType = "application/json";
-                    var response = new
-                    {
-                        status = report.Status.ToString(),
-                        checks = report.Entries.Select(e => new
-                        {
-                            component = e.Key,
-                            status = e.Value.Status.ToString(),
-                            description = e.Value.Description
-                        })
-                    };
-                    await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
-                }
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
+
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready"),
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
+
+            app.MapHealthChecks("/health/live", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("live"),
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
 
             app.MapControllers();

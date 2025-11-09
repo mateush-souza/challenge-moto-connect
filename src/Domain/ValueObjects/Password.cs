@@ -9,7 +9,8 @@ namespace challenge_moto_connect.Domain.ValueObjects
         private const int SaltSize = 16;
         private const int KeySize = 32;
         private const int Iterations = 100000;
-        private static readonly Regex ComplexityPattern = new Regex("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", RegexOptions.Compiled);
+        // Senha mais flexível: mínimo 6 caracteres, pelo menos uma letra e um número
+        private static readonly Regex ComplexityPattern = new Regex("^(?=.*[A-Za-z])(?=.*\\d).{6,}$", RegexOptions.Compiled);
 
         public string Value { get; private set; }
 
@@ -20,8 +21,14 @@ namespace challenge_moto_connect.Domain.ValueObjects
 
         public static Password FromPlainText(string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentException("Senha não pode ser vazia.");
+
+            if (value.Length < 6)
+                throw new ArgumentException("Senha deve ter pelo menos 6 caracteres.");
+
             if (!ComplexityPattern.IsMatch(value))
-                throw new ArgumentException("Senha inválida. A senha deve conter pelo menos 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.");
+                throw new ArgumentException("Senha inválida. A senha deve conter pelo menos uma letra e um número.");
 
             return new Password(Hash(value));
         }
