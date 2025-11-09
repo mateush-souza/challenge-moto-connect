@@ -114,6 +114,22 @@ namespace challenge_moto_connect
 
             var app = builder.Build();
 
+            // Aplicar migrations automaticamente no startup
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<ChallengeMotoConnectContext>();
+                    context.Database.Migrate();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "Erro ao aplicar migrations durante startup");
+                }
+            }
+
             app.UseSwagger();
             app.UseSwaggerUI();
             app.UseHttpsRedirection();
