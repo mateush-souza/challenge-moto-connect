@@ -19,6 +19,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using challenge_moto_connect.Api.HealthChecks;
+using System.Linq;
 
 namespace challenge_moto_connect
 {
@@ -29,6 +30,39 @@ namespace challenge_moto_connect
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers().AddNewtonsoftJson();
+
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+            var allowedOriginsRaw = builder.Configuration["Cors:AllowedOrigins"];
+
+            if (!string.IsNullOrWhiteSpace(allowedOriginsRaw))
+            {
+                var runtimeOrigins = allowedOriginsRaw.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                allowedOrigins = allowedOrigins.Concat(runtimeOrigins).ToArray();
+            }
+
+            allowedOrigins = allowedOrigins
+                .Where(origin => !string.IsNullOrWhiteSpace(origin))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("DefaultCorsPolicy", policy =>
+                {
+                    if (allowedOrigins.Length == 0 || allowedOrigins.Contains("*", StringComparer.OrdinalIgnoreCase))
+                    {
+                        policy.AllowAnyOrigin();
+                    }
+                    else
+                    {
+                        policy.WithOrigins(allowedOrigins);
+                    }
+
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
+                    policy.WithExposedHeaders("X-Pagination");
+                });
+            });
 
             builder.Services.AddApiVersioning(config =>
             {
@@ -214,12 +248,9 @@ namespace challenge_moto_connect
                 c.RoutePrefix = "swagger";
                 c.DisplayRequestDuration();
             });
-            
-            if (!app.Environment.IsDevelopment())
-            {
-            app.UseHttpsRedirection();
-            }
-            
+
+            app.UseCors("DefaultCorsPolicy");
+
             app.UseAuthentication();
             app.UseAuthorization();
 

@@ -80,7 +80,8 @@ namespace challenge_moto_connect.Application.Services
 
         public async Task<UserDTO> GetUserByEmailAsync(string email)
         {
-            var user = await _userRepository.GetByCondition(u => u.Email.Address == email).FirstOrDefaultAsync();
+            var emailValue = new Email(email);
+            var user = await _userRepository.GetByCondition(u => u.Email == emailValue).FirstOrDefaultAsync();
 
             if (user == null) return null;
 
@@ -89,7 +90,8 @@ namespace challenge_moto_connect.Application.Services
 
         public async Task<UserDTO> AuthenticateAsync(string email, string password)
         {
-            var user = await _userRepository.GetByCondition(u => u.Email.Address == email).FirstOrDefaultAsync();
+            var emailValue = new Email(email);
+            var user = await _userRepository.GetByCondition(u => u.Email == emailValue).FirstOrDefaultAsync();
             if (user == null) return null;
             if (!user.Password.Verify(password)) return null;
             return MapToDto(user);

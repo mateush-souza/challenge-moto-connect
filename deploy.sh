@@ -8,14 +8,16 @@ NC='\033[0m'
 
 echo -e "${YELLOW}Etapa 1: Configurando variáveis...${NC}"
 
-RESOURCE_GROUP="rg-challenge-fiap-557884"
+RESOURCE_GROUP="rg-challenge-fiap-555466"
 LOCATION="brazilsouth"
-DB_SERVER_NAME="sql-motoconnect-557884"
+DB_SERVER_NAME="sql-motoconnect-555466"
 DB_NAME="motoconnectdb"
-APP_SERVICE_PLAN="asp-motoconnect-fiap-557884"
-WEB_APP_NAME="webapp-motoconnect-557884"
+APP_SERVICE_PLAN="asp-motoconnect-fiap-555466"
+WEB_APP_NAME="webapp-motoconnect-555466"
 DB_ADMIN_USER="motosqladmin"
 DB_ADMIN_PASSWORD="FiapDevOps@2025"
+ALLOWED_ORIGINS_DEFAULT="https://webapp-motoconnect-555466.azurewebsites.net;http://localhost:4200"
+ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-$ALLOWED_ORIGINS_DEFAULT}"
 
 echo -e "${GREEN}✓ Variáveis configuradas${NC}\n"
 
@@ -115,7 +117,7 @@ az webapp create \
     --resource-group $RESOURCE_GROUP \
     --plan $APP_SERVICE_PLAN \
     --name $WEB_APP_NAME \
-    --runtime "DOTNET|8.0" \
+    --runtime "DOTNETCORE|8.0" \
     --output none
 echo -e "${GREEN}✓ Web App criado${NC}\n"
 
@@ -140,6 +142,7 @@ az webapp config appsettings set \
         ASPNETCORE_ENVIRONMENT="Production" \
         WEBSITE_RUN_FROM_PACKAGE="0" \
         SCM_DO_BUILD_DURING_DEPLOYMENT="false" \
+        "Cors__AllowedOrigins=$ALLOWED_ORIGINS" \
         "Jwt__Key=EstaEChaveSecretaParaJWTChallengeMotoConnectComMinimoTrintaEDoisCaracteres2024" \
         "Jwt__Issuer=MotoConnectIssuer" \
         "Jwt__Audience=MotoConnectAudience" \
